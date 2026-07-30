@@ -145,3 +145,5 @@ User joined chat: john (3)
 Chat client disconnected: PBXjelIoB0FWBsXPAACV
 Chat client connected: nE5rgygwZW-YXMPEAACa
 Chat client connected: 1uCeysod8yoPA2ELAACb
+Chat client disconnected: 1uCeysod8yoPA2ELAACb
+Chat client disconnected: nE5rgygwZW-YXMPEAACa
