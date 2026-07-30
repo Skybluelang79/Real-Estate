@@ -1,0 +1,122 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1A1714 0%, #2A2520 100%);
+  padding: 2rem;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-card {
+  background: #2A2520;
+  border: 1px solid #3D3529;
+  border-radius: 16px;
+  padding: 2.5rem;
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    color: #C9A84C;
+    font-family: 'Playfair Display', serif;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #9C948A;
+    margin-bottom: 2rem;
+  }
+}
+
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #e8e0d6;
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: #1A1714;
+    border: 1px solid #3D3529;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1rem;
+    transition: all 0.3s;
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: #6B6258;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #C9A84C;
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+    }
+  }
+}
+
+.login-btn {
+  width: 100%;
+  padding: 1rem;
+  background: #C9A84C;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover:not(:disabled) {
+    background: #b8973a;
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.back-link {
+  text-align: center;
+  margin-top: 1.5rem;
+
+  a {
+    color: #9C948A;
+    text-decoration: none;
+    font-size: 0.875rem;
+
+    &:hover {
+      color: #C9A84C;
+    }
+  }
+}
