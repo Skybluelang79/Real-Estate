@@ -1,0 +1,147 @@
+Dream Homes API running on port 3006
+Chat client connected: oIyxO96DHavAezwJAAAC
+User joined chat: Admin (1)
+Chat client disconnected: oIyxO96DHavAezwJAAAC
+Chat client connected: Z46bIQdgVelYa5YsAAAF
+User joined chat: Admin (1)
+Chat client disconnected: Z46bIQdgVelYa5YsAAAF
+Chat client connected: UDw888QuZJbi2Vw5AAAH
+Chat client disconnected: UDw888QuZJbi2Vw5AAAH
+Chat client connected: luj_ZmfvrwnEVeZzAAAK
+Chat client disconnected: luj_ZmfvrwnEVeZzAAAK
+Chat client connected: u5En8Q-TUOlJ7kRDAAAM
+User joined chat: Admin (1)
+Chat client disconnected: u5En8Q-TUOlJ7kRDAAAM
+Chat client connected: WYYqZnfiyFedK3xaAAAQ
+Chat client disconnected: WYYqZnfiyFedK3xaAAAQ
+Chat client connected: OpTPxxHsr-cQMPRfAAAS
+User joined chat: Admin (1)
+Chat client disconnected: OpTPxxHsr-cQMPRfAAAS
+Chat client connected: ATIazQD8pG6cC4XyAAAW
+User joined chat: Admin (1)
+Chat client disconnected: ATIazQD8pG6cC4XyAAAW
+Chat client connected: zLU5wrt11lo1Ryb4AAAY
+User joined chat: Admin (1)
+Chat client disconnected: zLU5wrt11lo1Ryb4AAAY
+Chat client connected: gu5yV2UHB_3Kd1vnAAAa
+Chat client disconnected: gu5yV2UHB_3Kd1vnAAAa
+Chat client connected: PIBdFm5N-wo_WtyfAAAd
+Chat client disconnected: PIBdFm5N-wo_WtyfAAAd
+Chat client connected: OjkVeS-i6z-VTpMdAAAf
+Chat client disconnected: OjkVeS-i6z-VTpMdAAAf
+Chat client connected: 23smk5C1byt2C7TRAAAi
+Chat client disconnected: 23smk5C1byt2C7TRAAAi
+Chat client connected: 2vVibYXnNjat90e-AAAl
+Chat client disconnected: 2vVibYXnNjat90e-AAAl
+Chat client connected: lWreHuN3gsJDGYYMAAAo
+Chat client disconnected: lWreHuN3gsJDGYYMAAAo
+Chat client connected: 3YQKfvYx46OcNa0ZAAAr
+Chat client disconnected: 3YQKfvYx46OcNa0ZAAAr
+Chat client connected: FGlqfA4ImE0P6bSDAAAu
+Chat client disconnected: FGlqfA4ImE0P6bSDAAAu
+Chat client connected: WX9QO1QirZJ8yVnNAAAx
+Chat client disconnected: WX9QO1QirZJ8yVnNAAAx
+Chat client connected: 1QGm4h1Vwf3utHxBAAA0
+Chat client disconnected: 1QGm4h1Vwf3utHxBAAA0
+Chat client connected: WtzfF9kUR1NIbUwLAAA2
+User joined chat: john (0)
+Chat client disconnected: WtzfF9kUR1NIbUwLAAA2
+Chat client connected: f1yDfyfkoJPRKkhAAAA4
+User joined chat: john (0)
+Chat client disconnected: f1yDfyfkoJPRKkhAAAA4
+Chat client connected: -NeAe5LeBGzePynEAAA8
+User joined chat: john (0)
+Chat client disconnected: -NeAe5LeBGzePynEAAA8
+Chat client connected: cFmjyMBPs-dJHUAaAAA-
+Chat client disconnected: cFmjyMBPs-dJHUAaAAA-
+Chat client connected: 1Wu5lmnNJWQAgRu7AABA
+User joined chat: john (3)
+Chat client disconnected: 1Wu5lmnNJWQAgRu7AABA
+Chat client connected: nZ4uqpDzW1Xh-WlYAABC
+User joined chat: john (3)
+Chat client disconnected: nZ4uqpDzW1Xh-WlYAABC
+Chat client connected: tuO82dSqBfcGPkWZAABG
+User joined chat: john (3)
+Chat client disconnected: tuO82dSqBfcGPkWZAABG
+Chat client connected: TWvQhzHP6Fc-CzBeAABI
+User joined chat: john (3)
+Chat client disconnected: TWvQhzHP6Fc-CzBeAABI
+Chat client connected: P_U7DHT6TNpshkXnAABK
+User joined chat: john (3)
+Chat client disconnected: P_U7DHT6TNpshkXnAABK
+Chat client connected: JhIUo7HRHL0xTWf5AABN
+User joined chat: john (3)
+Chat client disconnected: JhIUo7HRHL0xTWf5AABN
+Chat client connected: qckC4gGb9vHcp5OhAABQ
+User joined chat: john (3)
+Chat client disconnected: qckC4gGb9vHcp5OhAABQ
+Chat client connected: zXUDaYSA5ciSVxqpAABS
+User joined chat: john (3)
+Chat client disconnected: zXUDaYSA5ciSVxqpAABS
+Chat client connected: uh8rpdPguI__RI3hAABW
+User joined chat: john (3)
+Chat client disconnected: uh8rpdPguI__RI3hAABW
+Chat client connected: kLfyqoK-8bDGA8lAAABY
+User joined chat: john (3)
+Chat client disconnected: kLfyqoK-8bDGA8lAAABY
+Chat client connected: veS9EiW9rEUbI-PMAABc
+User joined chat: john (3)
+Chat client disconnected: veS9EiW9rEUbI-PMAABc
+Chat client connected: G0hg1Onyz9uodOzKAABf
+User joined chat: john (3)
+Chat client connected: f71163Owz_9m8fT-AABk
+User joined chat: john (3)
+Chat client disconnected: f71163Owz_9m8fT-AABk
+Chat client disconnected: G0hg1Onyz9uodOzKAABf
+Chat client connected: MQYZ3DsjEhsL3pi0AABn
+User joined chat: john (3)
+Chat client disconnected: MQYZ3DsjEhsL3pi0AABn
+Chat client connected: -LpbQxAF9GOCARcdAABq
+User joined chat: john (3)
+Chat client connected: KHCmGmX0JOgGaqweAABs
+User joined chat: john (3)
+Chat client disconnected: KHCmGmX0JOgGaqweAABs
+Chat client connected: HFzcChl7bCsKNX-OAABx
+User joined chat: john (3)
+Chat client disconnected: HFzcChl7bCsKNX-OAABx
+Chat client disconnected: -LpbQxAF9GOCARcdAABq
+Chat client connected: xpNd-J8DhrP9unyvAABz
+User joined chat: john (3)
+Chat client disconnected: xpNd-J8DhrP9unyvAABz
+Chat client connected: EAGZRWPcj3sI05lEAAB3
+User joined chat: john (3)
+Chat client disconnected: EAGZRWPcj3sI05lEAAB3
+Chat client connected: rYMV7RhMPA1buoyeAAB6
+User joined chat: john (3)
+Chat client connected: cQNeTW6oSt7H18TwAAB8
+User joined chat: john (3)
+Chat client disconnected: cQNeTW6oSt7H18TwAAB8
+Chat client connected: xcDKA59hdxlAlnOrAACA
+User joined chat: john (3)
+Chat client disconnected: xcDKA59hdxlAlnOrAACA
+Chat client connected: zajfslg-pKOBLIhnAACC
+User joined chat: john (3)
+Chat client disconnected: zajfslg-pKOBLIhnAACC
+Chat client connected: C3sfC6y4qv2nJZVWAACE
+User joined chat: john (3)
+Chat client disconnected: rYMV7RhMPA1buoyeAAB6
+Chat client disconnected: C3sfC6y4qv2nJZVWAACE
+Chat client connected: n94lFx8slDbqidaUAACI
+User joined chat: john (3)
+Chat client disconnected: n94lFx8slDbqidaUAACI
+Chat client connected: fnRrgvJPfxmwrvqnAACK
+User joined chat: john (3)
+Chat client connected: YxbH8BT50hhh2HBRAACO
+User joined chat: john (3)
+Chat client disconnected: YxbH8BT50hhh2HBRAACO
+Chat client connected: D_Wz4uZ1t2j9xXgCAACR
+User joined chat: john (3)
+Chat client disconnected: fnRrgvJPfxmwrvqnAACK
+Chat client connected: jozsQai4rs1WJSXcAACT
+Chat client disconnected: jozsQai4rs1WJSXcAACT
+Chat client disconnected: D_Wz4uZ1t2j9xXgCAACR
+Chat client connected: PBXjelIoB0FWBsXPAACV
+User joined chat: john (3)
+Chat client disconnected: PBXjelIoB0FWBsXPAACV
+Chat client connected: nE5rgygwZW-YXMPEAACa
+Chat client connected: 1uCeysod8yoPA2ELAACb
