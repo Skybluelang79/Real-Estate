@@ -164,3 +164,9 @@ td { padding: 14px 16px; border-bottom: 1px solid #f0ebe5; font-size: 0.9rem; co
 .btn-cancel:hover { background: #e5ddd4; }
 .btn-save { background: #C9A84C; color: #fff; }
 .btn-save:hover { background: #b8973a; }
+.mb-2 { margin-bottom: 8px; }
+.file-upload { margin-bottom: 8px; }
+.btn-upload { padding: 8px 16px; border: 1px dashed #C9A84C; border-radius: 8px; background: #faf6ef; color: #C9A84C; cursor: pointer; font-size: 0.85rem; transition: all 0.3s; }
+.btn-upload:hover { background: #f5ede0; }
+.btn-upload:disabled { opacity: 0.6; cursor: not-allowed; }
+.upload-preview { display: block; max-width: 200px; max-height: 120px; border-radius: 8px; margin-top: 8px; object-fit: cover; border: 1px solid #e5ddd4; }

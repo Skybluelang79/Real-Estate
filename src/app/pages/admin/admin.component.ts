@@ -23,6 +23,7 @@ export class AdminComponent implements OnInit {
   showModal = false;
   editingProperty: Property | null = null;
   loading = false;
+  uploading = false;
 
   formData = {
     title: '',
@@ -135,6 +136,16 @@ export class AdminComponent implements OnInit {
         error: (err) => alert(err.error?.error || 'Error deleting property')
       });
     }
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    this.uploading = true;
+    this.apiService.uploadImage(file).subscribe({
+      next: (res) => { this.formData.image = res.url; this.uploading = false; },
+      error: () => { alert('Upload failed'); this.uploading = false; }
+    });
   }
 
   logout(): void {

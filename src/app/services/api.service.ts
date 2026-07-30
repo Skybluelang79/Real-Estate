@@ -109,4 +109,10 @@ export class ApiService {
   subscribeNewsletter(email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/newsletter`, { email });
   }
+
+  uploadImage(file: File): Observable<{ url: string; path: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ url: string; path: string }>(`${this.apiUrl}/upload`, formData, { headers: this.getHeaders() });
+  }
 }
