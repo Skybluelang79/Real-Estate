@@ -1,0 +1,6 @@
+[build]
+  command = "npx @angular/cli build --prod --base-href=/"
+  publish = "dist/frontend"
+
+[build.environment]
+  NODE_VERSION = "20"
