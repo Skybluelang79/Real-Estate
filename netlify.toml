@@ -1,5 +1,4 @@
 [build]
-  base = "dream-homes"
   command = "npm install && npm run build"
   publish = "dist"
 
