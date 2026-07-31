@@ -80,6 +80,42 @@ function adminMiddleware(req, res, next) {
   next();
 }
 
+const loginAttempts = new Map();
+const MAX_ATTEMPTS = 5;
+const LOCK_WINDOW_MS = 15 * 60 * 1000;
+
+function checkLoginRateLimit(key) {
+  const now = Date.now();
+  if (loginAttempts.size > 10000) {
+    for (const [k, v] of loginAttempts) {
+      if (now - v.firstAt > LOCK_WINDOW_MS) loginAttempts.delete(k);
+    }
+  }
+  const entry = loginAttempts.get(key);
+  if (!entry || now - entry.firstAt > LOCK_WINDOW_MS) {
+    loginAttempts.set(key, { count: 0, firstAt: now });
+    return { allowed: true };
+  }
+  if (entry.count >= MAX_ATTEMPTS) {
+    return { allowed: false, retryMs: LOCK_WINDOW_MS - (now - entry.firstAt) };
+  }
+  return { allowed: true };
+}
+
+function recordLoginFailure(key) {
+  const now = Date.now();
+  const entry = loginAttempts.get(key);
+  if (!entry || now - entry.firstAt > LOCK_WINDOW_MS) {
+    loginAttempts.set(key, { count: 1, firstAt: now });
+  } else {
+    entry.count += 1;
+  }
+}
+
+function clearLoginFailures(key) {
+  loginAttempts.delete(key);
+}
+
 app.post('/api/auth/signup', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -103,14 +139,27 @@ app.post('/api/auth/signup', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    const key = `${req.ip || req.socket.remoteAddress || 'unknown'}:${String(email || '').toLowerCase()}`;
+    const check = checkLoginRateLimit(key);
+    if (!check.allowed) {
+      return res.status(429).json({
+        error: 'Too many login attempts. Please try again later.',
+        retryAfter: Math.ceil(check.retryMs / 1000),
+      });
+    }
     const db = getDbSync();
     const result = db.exec("SELECT id, name, email, password, isAdmin FROM users WHERE email = ?", [email]);
     if (result.length === 0 || result[0].values.length === 0) {
+      recordLoginFailure(key);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     const row = result[0].values[0];
     const valid = bcrypt.compareSync(password, row[3]);
-    if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!valid) {
+      recordLoginFailure(key);
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    clearLoginFailures(key);
     const token = jwt.sign({ userId: row[0] }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: row[0], name: row[1], email: row[2], isAdmin: row[4] === 1 } });
   } catch (err) {
