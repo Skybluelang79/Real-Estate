@@ -1,6 +1,7 @@
 [build]
-  command = "npx @angular/cli build --prod --base-href=/"
-  publish = "dist/frontend"
+  base = "dream-homes"
+  command = "npm install && npm run build"
+  publish = "dist"
 
 [build.environment]
   NODE_VERSION = "20"
