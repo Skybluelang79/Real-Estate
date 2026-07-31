@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: dream-homes-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/index.js
+    healthCheckPath: /api/properties
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: https://dreamhomes-realestate.netlify.app,http://localhost:5177
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SMTP_HOST
+        value: smtp.ethereal.email
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        value: test@ethereal.email
+      - key: SMTP_PASS
+        value: testpassword
