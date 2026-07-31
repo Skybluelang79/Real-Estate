@@ -1,4 +1,5 @@
-import { Routes, Route, Link, useSearchParams, Suspense, lazy } from 'react-router-dom'
+import { Suspense, lazy } from 'react'
+import { Routes, Route, Link, useSearchParams } from 'react-router-dom'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Hero from './components/Hero'
