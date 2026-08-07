@@ -4,6 +4,10 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Hero from './components/Hero'
 import PropertyCard from './components/PropertyCard'
+import StatsSection from './components/StatsSection'
+import ServicesSection from './components/ServicesSection'
+import NeighborhoodsPreview from './components/NeighborhoodsPreview'
+import CtaBanner from './components/CtaBanner'
 import Sponsors from './components/Sponsors'
 import Advertisements from './components/Advertisements'
 import Testimonials from './components/Testimonials'
@@ -74,6 +78,7 @@ function Home() {
   return (
     <>
       <Hero />
+      <StatsSection />
       <section className="section featured-section">
         <div className="container">
           <div className="section-header">
@@ -112,7 +117,10 @@ function Home() {
           )}
         </div>
       </section>
+      <ServicesSection />
+      <NeighborhoodsPreview />
       <Testimonials />
+      <CtaBanner />
       <Advertisements />
       <Sponsors />
     </>

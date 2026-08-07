@@ -33,6 +33,11 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
+  useEffect(() => {
     const handleClick = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setAccountOpen(false);
@@ -140,7 +145,7 @@ export default function Header() {
             <div className="lang-dropdown" ref={langRef}>
               <button className="lang-toggle" onClick={() => setLangOpen(!langOpen)} aria-label="Change language">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                {lang.toUpperCase()}
+                <span className="lang-code">{lang.toUpperCase()}</span>
               </button>
               {langOpen && (
                 <div className="dropdown-menu lang-menu">
