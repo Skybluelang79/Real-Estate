@@ -1,10 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+﻿import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import SafeImage from '../components/SafeImage';
 import Breadcrumbs from '../components/Breadcrumbs';
 import API_URL from '../config';
 import usePageTitle from '../hooks/usePageTitle';
+import DashboardPanel from '../components/admin/DashboardPanel';
+import LeadPipelinePanel from '../components/admin/LeadPipelinePanel';
+import OpenHousesPanel from '../components/admin/OpenHousesPanel';
+import NotificationsPanel from '../components/admin/NotificationsPanel';
+import UsersPanel from '../components/admin/UsersPanel';
 
 function AnimatedNum({ end, duration = 1500 }) {
   const [val, setVal] = useState(0);
@@ -116,7 +121,7 @@ function TestimonialsPanel({ token }) {
               <tr key={t.id} className="admin-table-row">
                 <td><strong>{t.name}</strong><br /><span className="admin-sub-text">{t.role}</span></td>
                 <td className="admin-msg-cell">{(t.content || '').substring(0, 100)}</td>
-                <td>{'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}</td>
+                <td>{'★'.repeat(t.rating)}{'★'.repeat(5 - t.rating)}</td>
                 <td>
                   <button className="admin-btn-edit" onClick={() => { setEditing(t.id); setForm({ name: t.name, role: t.role || '', content: t.content, rating: t.rating }); }}>Edit</button>
                   <button className="admin-btn-delete" onClick={() => remove(t.id)}>Delete</button>
@@ -235,10 +240,15 @@ export default function Admin() {
   const { user, token } = useAuth();
   usePageTitle('Admin Dashboard');
   const navigate = useNavigate();
-  const [tab, setTab] = useState('properties');
+  const [tab, setTab] = useState('dashboard');
   const [properties, setProperties] = useState([]);
+  const [agents, setAgents] = useState([]);
+  const [selected, setSelected] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [tours, setTours] = useState([]);
+  const [offers, setOffers] = useState([]);
+  const [prequals, setPrequals] = useState([]);
+  const [subscribers, setSubscribers] = useState([]);
   const [toast, setToast] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -246,8 +256,9 @@ export default function Admin() {
     title: '', address: '', city: '', state: '', zip: '', country: 'US',
     price: '', beds: '', baths: '', sqft: '', type: 'House',
     yearBuilt: '', description: '', agent: '', agentPhone: '', agentEmail: '',
-    tags: '', image: '', images: '', video: '', badge: 'New', featured: false, latitude: '', longitude: '',
-    lotSize: '', hoa: '', propertyTaxes: '', garage: '', stories: '', cooling: '', heating: '', parking: '', roof: '', viewType: '', basement: ''
+    tags: '', image: '', images: '', video: '', floorPlan: '', isPrivate: 0, badge: 'New', featured: false, latitude: '', longitude: '',
+    lotSize: '', hoa: '', propertyTaxes: '', garage: '', stories: '', cooling: '', heating: '', parking: '', roof: '', viewType: '', basement: '',
+    amenities: '', floorPlans: '', availability: 'Available Now', retail: ''
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState('title');
@@ -272,9 +283,13 @@ export default function Admin() {
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${API_URL}/api/properties`).then(r => r.json()).then(d => setProperties(d.properties || [])).catch(() => {});
+    fetch(`${API_URL}/api/properties?limit=1000`).then(r => r.json()).then(d => setProperties(d.properties || [])).catch(() => {});
     fetch(`${API_URL}/api/contacts`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()).then(d => setContacts(d.contacts || [])).catch(() => {});
     fetch(`${API_URL}/api/tours`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()).then(d => setTours(d.tours || [])).catch(() => {});
+    fetch(`${API_URL}/api/offers`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()).then(d => setOffers(d.offers || [])).catch(() => {});
+    fetch(`${API_URL}/api/pre-qualifications`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()).then(d => setPrequals(d.requests || d.prequals || [])).catch(() => {});
+    fetch(`${API_URL}/api/newsletter`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()).then(d => setSubscribers(d.subscribers || [])).catch(() => {});
+    fetch(`${API_URL}/api/agents`).then(r => r.json()).then(d => setAgents(d.agents || [])).catch(() => {});
   }, [token]);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
@@ -322,8 +337,9 @@ export default function Admin() {
       title: '', address: '', city: '', state: '', zip: '', country: 'US',
       price: '', beds: '', baths: '', sqft: '', type: 'House',
       yearBuilt: '', description: '', agent: '', agentPhone: '', agentEmail: '',
-      tags: '', image: '', images: '', video: '', badge: 'New', featured: false, latitude: '', longitude: '',
-      lotSize: '', hoa: '', propertyTaxes: '', garage: '', stories: '', cooling: '', heating: '', parking: '', roof: '', viewType: '', basement: ''
+      tags: '', image: '', images: '', video: '', floorPlan: '', isPrivate: 0, badge: 'New', featured: false, latitude: '', longitude: '',
+      lotSize: '', hoa: '', propertyTaxes: '', garage: '', stories: '', cooling: '', heating: '', parking: '', roof: '', viewType: '', basement: '',
+      amenities: '', floorPlans: '', availability: 'Available Now', retail: ''
     });
     setEditId(null);
     setFormOpen(false);
@@ -334,15 +350,19 @@ export default function Admin() {
     const agentName = typeof agentObj === 'string' ? agentObj : agentObj.name || '';
     const tagsStr = Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || '');
     const imagesStr = Array.isArray(p.images) ? p.images.join(', ') : (p.images || '');
+    const amenitiesStr = Array.isArray(p.amenities) ? p.amenities.join(', ') : (p.amenities || '');
+    const floorPlansStr = Array.isArray(p.floorPlans) ? p.floorPlans.join(', ') : (p.floorPlans || '');
     setFormData({
       title: p.name || p.title || '', address: p.address || '', city: p.city || '', state: p.state || '', zip: p.zipcode || p.zip || '',
       country: p.country || 'US', price: p.price || '', beds: p.beds || '', baths: p.baths || '', sqft: p.size || p.sqft || '', type: p.type || 'House',
       yearBuilt: p.yearBuilt || '', description: p.description || '', agent: agentName, agentPhone: agentObj.phone || '',
       agentEmail: agentObj.email || '', tags: tagsStr, image: p.image || '', images: imagesStr, video: p.video || '',
+      floorPlan: p.floorPlan || '', isPrivate: p.isPrivate || 0,
       badge: p.badge || 'New',
       featured: p.featured || false, latitude: p.latitude || '', longitude: p.longitude || '',
       lotSize: p.lotSize || '', hoa: p.hoa || '', propertyTaxes: p.propertyTaxes || '', garage: p.garage || '', stories: p.stories || '',
-      cooling: p.cooling || '', heating: p.heating || '', parking: p.parking || '', roof: p.roof || '', viewType: p.viewType || '', basement: p.basement || ''
+      cooling: p.cooling || '', heating: p.heating || '', parking: p.parking || '', roof: p.roof || '', viewType: p.viewType || '', basement: p.basement || '',
+      amenities: amenitiesStr, floorPlans: floorPlansStr, availability: p.availability || 'Available Now', retail: p.retail || ''
     });
     setEditId(p.id || p._id);
     setFormOpen(true);
@@ -351,6 +371,8 @@ export default function Admin() {
   const handleSave = async (e) => {
     e.preventDefault();
     const imagesArr = formData.images ? formData.images.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const amenitiesArr = formData.amenities ? formData.amenities.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const floorPlansArr = formData.floorPlans ? formData.floorPlans.split(',').map(s => s.trim()).filter(Boolean) : [];
     const body = {
       title: formData.title,
       price: formData.price,
@@ -359,6 +381,10 @@ export default function Admin() {
       badge: formData.badge,
       image: formData.image,
       images: imagesArr,
+      amenities: amenitiesArr,
+      floorPlans: floorPlansArr,
+      availability: formData.availability || null,
+      retail: formData.retail || null,
       beds: parseInt(formData.beds) || 1,
       baths: parseInt(formData.baths) || 1,
       sqft: formData.sqft,
@@ -387,7 +413,9 @@ export default function Admin() {
       parking: formData.parking || null,
       roof: formData.roof || null,
       viewType: formData.viewType || null,
-      basement: formData.basement || null
+      basement: formData.basement || null,
+      floorPlan: formData.floorPlan || null,
+      isPrivate: formData.isPrivate ? 1 : 0
     };
     try {
       const url = editId ? `${API_URL}/api/properties/${editId}` : `${API_URL}/api/properties`;
@@ -395,7 +423,7 @@ export default function Admin() {
       const res = await fetch(url, { method, headers, body: JSON.stringify(body) });
       if (res.ok) {
         showToast(editId ? 'Property updated!' : 'Property created!');
-        const d = await fetch(`${API_URL}/api/properties`).then(r => r.json());
+        const d = await fetch(`${API_URL}/api/properties?limit=1000`).then(r => r.json());
         setProperties(d.properties || []);
         resetForm();
       } else {
@@ -413,6 +441,96 @@ export default function Admin() {
       }
     } catch { showToast('Error deleting property'); }
     setConfirmDelete(null);
+  };
+
+  const toggleSelect = (id) => {
+    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.length === filtered.length) setSelected([]);
+    else setSelected(filtered.map(p => p.id || p._id));
+  };
+
+  const bulkUpdate = async (field, value) => {
+    if (selected.length === 0) { showToast('Select properties first'); return; }
+    try {
+      const res = await fetch(`${API_URL}/api/properties/bulk`, { method: 'POST', headers, body: JSON.stringify({ ids: selected, field, value }) });
+      if (res.ok) {
+        showToast(`Updated ${selected.length} properties`);
+        setSelected([]);
+        const d = await fetch(`${API_URL}/api/properties?limit=1000`).then(r => r.json());
+        setProperties(d.properties || []);
+      } else { showToast('Bulk update failed'); }
+    } catch { showToast('Bulk update failed'); }
+  };
+
+  const bulkDelete = async () => {
+    if (selected.length === 0) return;
+    if (!confirm(`Delete ${selected.length} properties?`)) return;
+    try {
+      const res = await fetch(`${API_URL}/api/properties/bulk`, { method: 'POST', headers, body: JSON.stringify({ ids: selected, field: 'delete', value: true }) });
+      if (res.ok) {
+        showToast(`Deleted ${selected.length} properties`);
+        setSelected([]);
+        const d = await fetch(`${API_URL}/api/properties?limit=1000`).then(r => r.json());
+        setProperties(d.properties || []);
+      } else { showToast('Bulk delete failed'); }
+    } catch { showToast('Bulk delete failed'); }
+  };
+
+  const exportCSV = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/properties/export`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) { showToast('Export failed'); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'properties.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch { showToast('Export failed'); }
+  };
+
+  const importCSV = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const res = await fetch(`${API_URL}/api/properties/import`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+      const d = await res.json();
+      showToast(d.message || 'Import complete');
+      const props = await fetch(`${API_URL}/api/properties?limit=1000`).then(r => r.json());
+      setProperties(props.properties || []);
+    } catch { showToast('Import failed'); }
+    e.target.value = '';
+  };
+
+  const updateOfferStatus = async (id, status) => {
+    try {
+      const res = await fetch(`${API_URL}/api/offers/${id}`, { method: 'PUT', headers, body: JSON.stringify({ status }) });
+      if (res.ok) {
+        setOffers(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+        showToast(`Offer marked ${status}`);
+      } else {
+        showToast('Failed to update offer');
+      }
+    } catch { showToast('Error updating offer'); }
+  };
+
+  const deleteOffer = async (id) => {
+    if (!confirm('Delete this offer?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/offers/${id}`, { method: 'DELETE', headers });
+      if (res.ok) {
+        setOffers(prev => prev.filter(o => o.id !== id));
+        showToast('Offer deleted');
+      }
+    } catch { showToast('Error deleting offer'); }
   };
 
   const filtered = properties.filter((p) => {
@@ -456,6 +574,11 @@ export default function Admin() {
             <div className="admin-stat-number"><AnimatedNum end={tours.length} /></div>
             <div className="admin-stat-label">Tours</div>
           </div>
+          <div className="admin-stat-card" style={{ '--stat-color': '#2E7D32' }}>
+            <div className="admin-stat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div className="admin-stat-number"><AnimatedNum end={offers.length} /></div>
+            <div className="admin-stat-label">Offers</div>
+          </div>
           <div className="admin-stat-card" style={{ '--stat-color': '#6D5940' }}>
             <div className="admin-stat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
             <div className="admin-stat-number"><AnimatedNum end={properties.reduce((a, p) => a + (p.beds || 0), 0)} /></div>
@@ -464,12 +587,38 @@ export default function Admin() {
         </div>
 
         <div className="admin-tabs">
-          {['properties', 'contacts', 'tours', 'analytics', 'testimonials', 'blog', 'chat', 'settings'].map((t) => (
+          {['dashboard', 'properties', 'leads', 'open-houses', 'prequals', 'newsletter', 'contacts', 'tours', 'offers', 'analytics', 'notifications', 'testimonials', 'blog', 'chat', 'users', 'settings'].map((t) => (
             <button key={t} className={`admin-tab ${tab === t ? 'admin-tab-active' : ''}`} onClick={() => setTab(t)}>
-              {t.charAt(0).toUpperCase() + t.slice(1)}
+              {t === 'open-houses' ? 'Open Houses' : t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
         </div>
+
+        {tab === 'dashboard' && (
+          <div className="admin-tab-content admin-tab-visible">
+            <DashboardPanel token={token} properties={properties} />
+          </div>
+        )}
+        {tab === 'leads' && (
+          <div className="admin-tab-content admin-tab-visible">
+            <LeadPipelinePanel token={token} agents={agents} />
+          </div>
+        )}
+        {tab === 'open-houses' && (
+          <div className="admin-tab-content admin-tab-visible">
+            <OpenHousesPanel token={token} properties={properties} />
+          </div>
+        )}
+        {tab === 'notifications' && (
+          <div className="admin-tab-content admin-tab-visible">
+            <NotificationsPanel token={token} />
+          </div>
+        )}
+        {tab === 'users' && (
+          <div className="admin-tab-content admin-tab-visible">
+            <UsersPanel token={token} currentUser={user} />
+          </div>
+        )}
 
         {tab === 'properties' && (
           <div className="admin-tab-content admin-tab-visible">
@@ -484,21 +633,54 @@ export default function Admin() {
               <button className="btn-primary" onClick={() => { resetForm(); setFormOpen(true); }}>+ Add Property</button>
             </div>
 
+            <div className="admin-bulk-toolbar">
+              <label className="admin-check-label">
+                <input type="checkbox" checked={selected.length > 0 && selected.length === filtered.length} onChange={toggleSelectAll} />
+                <span>Select all ({filtered.length})</span>
+              </label>
+              <span className="admin-bulk-count">{selected.length} selected</span>
+              <div className="admin-bulk-actions">
+                <select className="admin-sort" value="" onChange={(e) => { if (e.target.value) bulkUpdate('featured', e.target.value === 'featured'); e.target.value = ''; }}>
+                  <option value="">Feature…</option>
+                  <option value="featured">Mark featured</option>
+                  <option value="not-featured">Unmark featured</option>
+                </select>
+                <select className="admin-sort" value="" onChange={(e) => { if (e.target.value) bulkUpdate('isPrivate', e.target.value === 'private'); e.target.value = ''; }}>
+                  <option value="">Visibility…</option>
+                  <option value="private">Make private (VIP)</option>
+                  <option value="public">Make public</option>
+                </select>
+                <button className="admin-btn admin-btn-danger" onClick={bulkDelete} disabled={selected.length === 0}>Delete selected</button>
+              </div>
+              <div className="admin-csv-actions">
+                <button className="admin-btn" onClick={exportCSV}>Export CSV</button>
+                <label className="admin-btn admin-btn-outline">
+                  Import CSV
+                  <input type="file" accept=".csv" hidden onChange={importCSV} />
+                </label>
+              </div>
+            </div>
+
             <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead>
                   <tr>
+                    <th style={{ width: 40 }}></th>
                     <th>Property</th>
                     <th>Location</th>
                     <th>Price</th>
                     <th>Beds</th>
                     <th>Type</th>
+                    <th>Availability</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((p) => (
-                    <tr key={p.id || p._id} className="admin-table-row">
+                    <tr key={p.id || p._id} className={`admin-table-row ${selected.includes(p.id || p._id) ? 'admin-row-selected' : ''}`}>
+                      <td>
+                        <input type="checkbox" checked={selected.includes(p.id || p._id)} onChange={() => toggleSelect(p.id || p._id)} />
+                      </td>
                       <td>
                         <div className="admin-table-property">
                           <SafeImage src={p.image} alt={p.title} className="admin-table-thumb" />
@@ -509,12 +691,56 @@ export default function Admin() {
                       <td className="admin-price">${p.price.toLocaleString()}</td>
                       <td>{p.beds}</td>
                       <td><span className="admin-type-badge">{p.type}</span></td>
+                      <td><span className="admin-status-badge">{p.availability || '—'}</span></td>
                       <td>
                         <div className="admin-actions">
                           <button className="admin-btn-edit" onClick={() => openEdit(p)}>Edit</button>
                           <button className="admin-btn-delete" onClick={() => setConfirmDelete(p.id || p._id)}>Delete</button>
                         </div>
                       </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {tab === 'prequals' && (
+          <div className="admin-tab-content admin-tab-visible">
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Home Price</th><th>Down</th><th>Monthly</th><th>Date</th></tr></thead>
+                <tbody>
+                  {prequals.length === 0 && <tr><td colSpan={7} className="admin-empty">No pre-qualifications yet.</td></tr>}
+                  {prequals.map((q) => (
+                    <tr key={q.id} className="admin-table-row">
+                      <td><strong>{q.name}</strong></td>
+                      <td>{q.email}</td>
+                      <td>{q.phone || '-'}</td>
+                      <td>{q.homePrice ? `$${Number(q.homePrice).toLocaleString()}` : '-'}</td>
+                      <td>{q.downPayment ? `$${Number(q.downPayment).toLocaleString()}` : '-'}</td>
+                      <td>{q.monthlyPayment ? `$${Number(q.monthlyPayment).toLocaleString()}` : '-'}</td>
+                      <td>{q.createdAt ? new Date(q.createdAt).toLocaleDateString() : '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {tab === 'newsletter' && (
+          <div className="admin-tab-content admin-tab-visible">
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead><tr><th>Email</th><th>Date</th></tr></thead>
+                <tbody>
+                  {subscribers.length === 0 && <tr><td colSpan={2} className="admin-empty">No subscribers yet.</td></tr>}
+                  {subscribers.map((s) => (
+                    <tr key={s.id} className="admin-table-row">
+                      <td><strong>{s.email}</strong></td>
+                      <td>{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -566,6 +792,37 @@ export default function Admin() {
           </div>
         )}
 
+        {tab === 'offers' && (
+          <div className="admin-tab-content admin-tab-visible">
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead><tr><th>Buyer</th><th>Property</th><th>Amount</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {offers.length === 0 && <tr><td colSpan={6} className="admin-empty">No offers yet.</td></tr>}
+                  {offers.map((o) => (
+                    <tr key={o.id} className="admin-table-row">
+                      <td><strong>{o.name}</strong><br /><span className="admin-sub-text">{o.email}{o.phone ? ` · ${o.phone}` : ''}</span></td>
+                      <td>{o.propertyTitle || `Property #${o.propertyId}`}</td>
+                      <td className="admin-price">${(o.amount || 0).toLocaleString()}</td>
+                      <td>{o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td>
+                      <td><span className={`admin-status-badge admin-status-${o.status || 'pending'}`}>{o.status || 'pending'}</span></td>
+                      <td>
+                        <select className="admin-sort" defaultValue={o.status || 'pending'} onChange={(e) => updateOfferStatus(o.id, e.target.value)}>
+                          <option value="pending">Pending</option>
+                          <option value="accepted">Accepted</option>
+                          <option value="countered">Countered</option>
+                          <option value="rejected">Rejected</option>
+                        </select>
+                        <button className="admin-btn-delete" onClick={() => deleteOffer(o.id)}>Delete</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {tab === 'analytics' && (
           <div className="admin-tab-content admin-tab-visible">
             <AnalyticsPanel token={token} />
@@ -597,7 +854,21 @@ export default function Admin() {
             </div>
             <div className="admin-settings-card">
               <h3>Database</h3>
-              <p className="admin-sub-text">Properties: {properties.length} | Contacts: {contacts.length} | Tours: {tours.length}</p>
+              <p className="admin-sub-text">Properties: {properties.length} | Contacts: {contacts.length} | Tours: {tours.length} | Pre-quals: {prequals.length} | Subscribers: {subscribers.length}</p>
+            </div>
+            <div className="admin-settings-card">
+              <h3>Email / SMTP Test</h3>
+              <p className="admin-sub-text">Sends a test message through your configured SMTP server (see .env).</p>
+              <div className="admin-form-actions" style={{ marginTop: 12 }}>
+                <button className="btn-primary" onClick={async () => {
+                  showToast('Sending test email...');
+                  try {
+                    const res = await fetch(`${API_URL}/api/settings/smtp-test`, { method: 'POST', headers });
+                    const d = await res.json();
+                    showToast(d.message || d.error || 'SMTP test result');
+                  } catch { showToast('SMTP test failed to reach server'); }
+                }}>Send test email</button>
+              </div>
             </div>
           </div>
         )}
@@ -612,7 +883,7 @@ export default function Admin() {
                   <div className="form-group"><label>Title</label><input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required /></div>
                   <div className="form-group"><label>Type</label>
                     <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
-                      <option>House</option><option>Apartment</option><option>Condo</option><option>Villa</option><option>Cottage</option><option>Penthouse</option><option>Townhouse</option>
+                      <option>House</option><option>Apartment</option><option>Condo</option><option>Villa</option><option>Cottage</option><option>Penthouse</option><option>Townhouse</option><option>Retail</option>
                     </select>
                   </div>
                 </div>
@@ -650,12 +921,48 @@ export default function Admin() {
                 {formData.image && <div className="admin-form-preview"><SafeImage src={formData.image} alt="Preview" /></div>}
                 <div className="form-group"><label>Virtual Tour Video URL (YouTube embed)</label><input type="url" value={formData.video} onChange={(e) => setFormData({ ...formData, video: e.target.value })} placeholder="https://www.youtube.com/embed/..." />
                 </div>
+                <div className="form-row-3">
+                  <div className="form-group"><label>Floor Plan Image URL</label><input type="url" value={formData.floorPlan} onChange={(e) => setFormData({ ...formData, floorPlan: e.target.value })} placeholder="https://..." />
+                  </div>
+                  <div className="form-group admin-featured-toggle" style={{ paddingTop: 22 }}><label>Private (VIP)</label>
+                    <button type="button" className={`admin-toggle ${formData.isPrivate ? 'admin-toggle-on' : ''}`} onClick={() => setFormData({ ...formData, isPrivate: formData.isPrivate ? 0 : 1 })}>
+                      <span className="admin-toggle-knob" />
+                    </button>
+                  </div>
+                </div>
                 <div className="form-group"><label>Additional Images (comma-separated URLs)</label>
                   <div className="admin-upload-row">
                     <input type="text" value={formData.images} onChange={(e) => setFormData({ ...formData, images: e.target.value })} placeholder="https://..., https://..." />
                     <label className="admin-upload-btn">
                       Upload Files
                       <input type="file" accept="image/*" multiple onChange={handleImagesUpload} hidden />
+                    </label>
+                  </div>
+                </div>
+                <div className="form-row-3">
+                  <div className="form-group"><label>Amenities (comma-separated)</label><input type="text" value={formData.amenities} onChange={(e) => setFormData({ ...formData, amenities: e.target.value })} placeholder="Pool,Gym,Fireplace" /></div>
+                  <div className="form-group"><label>Availability</label>
+                    <select value={formData.availability} onChange={(e) => setFormData({ ...formData, availability: e.target.value })}>
+                      <option>Available Now</option><option>Available Soon</option><option>By Appointment</option><option>Lease to Own</option><option>Sold</option><option>Pending</option>
+                    </select>
+                  </div>
+                  <div className="form-group"><label>Retail Info (if commercial)</label><input type="text" value={formData.retail} onChange={(e) => setFormData({ ...formData, retail: e.target.value })} placeholder="Storefront, Leasehold..." /></div>
+                </div>
+                <div className="form-group"><label>Floor Plan Image URLs (comma-separated)</label>
+                  <div className="admin-upload-row">
+                    <input type="text" value={formData.floorPlans} onChange={(e) => setFormData({ ...formData, floorPlans: e.target.value })} placeholder="https://..., https://..." />
+                    <label className="admin-upload-btn">
+                      Upload Files
+                      <input type="file" accept="image/*" multiple onChange={async (e) => {
+                        const files = e.target.files;
+                        if (!files || files.length === 0) return;
+                        const urls = await uploadFiles(files);
+                        if (urls.length > 0) {
+                          const existing = formData.floorPlans ? formData.floorPlans.split(',').filter(Boolean) : [];
+                          setFormData({ ...formData, floorPlans: [...existing, ...urls].join(',') });
+                          showToast(`${urls.length} floor plans uploaded!`);
+                        }
+                      }} hidden />
                     </label>
                   </div>
                 </div>

@@ -59,6 +59,8 @@ async function initializeDatabase() {
   )`);
 
   try { db.run("ALTER TABLE properties ADD COLUMN video TEXT"); } catch (e) { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN floorPlan TEXT"); } catch (e) { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN isPrivate INTEGER DEFAULT 0"); } catch (e) { /* already exists */ }
   try { db.run("ALTER TABLE properties ADD COLUMN country TEXT DEFAULT 'US'"); } catch (e) { /* already exists */ }
   try { db.run("ALTER TABLE properties ADD COLUMN lotSize REAL"); } catch (e) { /* already exists */ }
   try { db.run("ALTER TABLE properties ADD COLUMN hoa REAL"); } catch (e) { /* already exists */ }
@@ -72,6 +74,105 @@ async function initializeDatabase() {
   try { db.run("ALTER TABLE properties ADD COLUMN viewType TEXT"); } catch (e) { /* already exists */ }
   try { db.run("ALTER TABLE properties ADD COLUMN basement TEXT"); } catch (e) { /* already exists */ }
   try { db.run("ALTER TABLE properties ADD COLUMN status TEXT DEFAULT 'For Sale'"); } catch (e) { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN amenities TEXT"); } catch (e) { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN floorPlans TEXT"); } catch (e) { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN availability TEXT"); } catch (e) { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN retail TEXT"); } catch (e) { /* already exists */ }
+
+  try { db.run("ALTER TABLE users ADD COLUMN passwordResetToken TEXT"); } catch (e) { /* already exists */ }
+  try { db.run("ALTER TABLE users ADD COLUMN passwordResetExpires TEXT"); } catch (e) { /* already exists */ }
+  try { db.run("ALTER TABLE users ADD COLUMN active INTEGER DEFAULT 1"); } catch (e) { /* already exists */ }
+  try { db.run("ALTER TABLE saved_searches ADD COLUMN lastAlertAt TEXT"); } catch (e) { /* already exists */ }
+
+  db.run(`CREATE TABLE IF NOT EXISTS leads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT,
+    type TEXT DEFAULT 'buyer',
+    status TEXT DEFAULT 'new',
+    source TEXT,
+    notes TEXT,
+    agent TEXT,
+    propertyId INTEGER,
+    propertyTitle TEXT,
+    budget REAL,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS open_houses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    propertyId INTEGER NOT NULL,
+    title TEXT,
+    date TEXT NOT NULL,
+    startTime TEXT NOT NULL,
+    endTime TEXT,
+    description TEXT,
+    status TEXT DEFAULT 'upcoming',
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS open_house_rsvps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    openHouseId INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT,
+    guests INTEGER DEFAULT 1,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT,
+    message TEXT NOT NULL,
+    link TEXT,
+    read INTEGER DEFAULT 0,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS offers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    propertyId INTEGER NOT NULL,
+    userId INTEGER,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT,
+    amount REAL NOT NULL,
+    message TEXT,
+    status TEXT DEFAULT 'pending',
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS agents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    email TEXT,
+    phone TEXT,
+    title TEXT,
+    bio TEXT,
+    photo TEXT,
+    specialties TEXT,
+    experience TEXT,
+    sales TEXT,
+    active INTEGER DEFAULT 1
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS pre_qualifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT,
+    homePrice REAL,
+    downPayment REAL,
+    interestRate REAL,
+    loanTerm INTEGER,
+    monthlyPayment REAL,
+    notes TEXT,
+    status TEXT DEFAULT 'new',
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
 
   db.run(`CREATE TABLE IF NOT EXISTS contacts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -165,6 +266,7 @@ async function initializeDatabase() {
     name TEXT,
     filters TEXT,
     alertEnabled INTEGER DEFAULT 0,
+    lastAlertAt TEXT,
     createdAt TEXT DEFAULT CURRENT_TIMESTAMP
   )`);
 
@@ -186,6 +288,17 @@ async function initializeDatabase() {
     createdAt TEXT DEFAULT CURRENT_TIMESTAMP
   )`);
 
+  db.run("CREATE INDEX IF NOT EXISTS idx_properties_status ON properties (status)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_properties_type ON properties (type)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_properties_price ON properties (price)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_properties_city ON properties (city)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_properties_isPrivate ON properties (isPrivate)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_leads_status ON leads (status)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_leads_email ON leads (email)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_offers_property ON offers (propertyId)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites (userId)");
+  db.run("CREATE INDEX IF NOT EXISTS idx_page_views_property ON page_views (propertyId)");
+
   db.run(`CREATE TABLE IF NOT EXISTS chat_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     userId INTEGER,
@@ -195,8 +308,30 @@ async function initializeDatabase() {
   )`);
 
   await seedData();
+  seedAgents();
   saveDb();
   return db;
+}
+
+function seedAgents() {
+  const existing = db.exec("SELECT COUNT(*) as count FROM agents");
+  if (existing[0] && existing[0].values[0][0] > 0) return;
+
+  const agents = [
+    { name: 'Sarah Johnson', email: 'sarah@dreamhomes.com', phone: '(310) 555-0123', title: 'Broker Associate · Luxury Waterfront', bio: 'A 15-year veteran of the California luxury market, Sarah has closed over $250M in sales. Her white-glove service and deep knowledge of Malibu and the coast have made her the trusted advisor to executives, athletes and entrepreneurs seeking exceptional oceanfront estates.', specialties: 'Waterfront, Estates, Off-Market', experience: '15+ years', sales: '$250M+ in sales', photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=faces' },
+    { name: 'Michael Chen', email: 'michael@dreamhomes.com', phone: '(213) 555-0456', title: 'Senior Advisor · Downtown & Urban Living', bio: 'Michael is a specialist in high-rise condominiums and urban living. From penthouse penthouses to developer previews, he guides clients through the downtown landscape with precision and discretion.', specialties: 'Penthouses, Condos, New Developments', experience: '10+ years', sales: '$120M+ in sales', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=faces' },
+    { name: 'Emily Rodriguez', email: 'emily@dreamhomes.com', phone: '(626) 555-0789', title: 'Marketing & Staging Director', bio: 'Emily combines editorial staging with data-driven marketing to maximize exposure for every listing. Her homes average 3x the market time premium and routinely sell above asking.', specialties: 'Marketing, Staging, First-Time Buyers', experience: '8+ years', sales: '$80M+ in sales', photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=faces' },
+    { name: 'David Park', email: 'david@dreamhomes.com', phone: '(310) 555-0100', title: 'Luxury Advisor · Skyline & Penthouse', bio: 'David represents the upper echelon of Beverly Hills living. Known for quietly marketing ultra-high-net-worth properties, he has negotiated some of the most significant penthouse transactions on the Westside.', specialties: 'Penthouse, Skyline Views, UHNW', experience: '12+ years', sales: '$300M+ in sales', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=faces' },
+    { name: 'Jessica Williams', email: 'jessica@dreamhomes.com', phone: '(818) 555-0456', title: 'Advisor · Family Communities', bio: 'Jessica helps families find the perfect place to call home, with a focus on top school districts and family-friendly neighborhoods across the San Gabriel Valley.', specialties: 'Family Homes, Schools, Relocation', experience: '9+ years', sales: '$95M+ in sales', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=faces' },
+    { name: 'Amanda Foster', email: 'amanda@dreamhomes.com', phone: '(310) 555-0222', title: 'Advisor · Beachfront & Coastal', bio: 'Amanda lives and breathes coastal living. From beachfront condos to ocean-view retreats, she connects buyers with the relaxed, resort-style lifestyle of the Santa Monica coastline.', specialties: 'Beachfront, Coastal Living, Condos', experience: '6+ years', sales: '$60M+ in sales', photo: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=faces' },
+    { name: 'Olivia Bennett', email: 'olivia@dreamhomes.com', phone: '(310) 555-0310', title: 'International Services Director', bio: 'Olivia leads our international division, serving cross-border buyers and investors with multilingual support, currency guidance and a global network of trusted partners.', specialties: 'International, Investments, Relocation', experience: '11+ years', sales: '$180M+ in sales', photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=faces' },
+    { name: 'Thomas Carter', email: 'thomas@dreamhomes.com', phone: '(213) 555-0888', title: 'Investment & 1031 Exchange Advisor', bio: 'Thomas specializes in income-producing properties and 1031 exchanges, helping investors build and preserve wealth through strategic real estate acquisitions.', specialties: 'Investments, 1031 Exchange, Portfolio', experience: '14+ years', sales: '$220M+ in sales', photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=faces' },
+  ];
+
+  agents.forEach(a => {
+    db.run("INSERT INTO agents (name, email, phone, title, bio, photo, specialties, experience, sales, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+      [a.name, a.email, a.phone, a.title, a.bio, a.photo, a.specialties, a.experience, a.sales]);
+  });
 }
 
 async function seedData() {
@@ -237,7 +372,11 @@ async function seedData() {
         featured: 1,
         latitude: 34.0259,
         longitude: -118.7798,
-        lotSize: 0.75, hoa: 350, propertyTaxes: 14400, garage: 3, stories: 2, cooling: 'Central AC', heating: 'Forced Air', parking: 'Garage - Attached', roof: 'Tile', viewType: 'Ocean', basement: 'Finished'
+        lotSize: 0.75, hoa: 350, propertyTaxes: 14400, garage: 3, stories: 2, cooling: 'Central AC', heating: 'Forced Air', parking: 'Garage - Attached', roof: 'Tile', viewType: 'Ocean', basement: 'Finished',
+        amenities: JSON.stringify(['Pool', 'Ocean View', 'Smart Home', 'Home Theater', 'Gourmet Kitchen', 'Guest House']),
+        floorPlans: JSON.stringify(['https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200', 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200']),
+        availability: 'Available Now',
+        retail: null
       },
       {
         title: 'Modern Downtown Apartment',
@@ -265,7 +404,11 @@ async function seedData() {
         featured: 1,
         latitude: 34.0522,
         longitude: -118.2437,
-        lotSize: null, hoa: 450, propertyTaxes: 5400, garage: 1, stories: 1, cooling: 'Central AC', heating: 'Electric', parking: 'Underground Garage', roof: 'Flat', viewType: 'City', basement: null
+        lotSize: null, hoa: 450, propertyTaxes: 5400, garage: 1, stories: 1, cooling: 'Central AC', heating: 'Electric', parking: 'Underground Garage', roof: 'Flat', viewType: 'City', basement: null,
+        amenities: JSON.stringify(['Gym', 'Concierge', 'Rooftop Deck', 'Smart Home', 'Security', 'Bike Storage']),
+        floorPlans: JSON.stringify(['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200']),
+        availability: 'Available Now',
+        retail: null
       },
       {
         title: 'Cozy Cottage in the Hills',
@@ -293,7 +436,11 @@ async function seedData() {
         featured: 0,
         latitude: 34.1478,
         longitude: -118.1445,
-        lotSize: 0.25, hoa: null, propertyTaxes: 3300, garage: 1, stories: 1, cooling: 'Window Unit', heating: 'Radiator', parking: 'Driveway', roof: 'Shingle', viewType: 'Mountain', basement: 'Partial'
+        lotSize: 0.25, hoa: null, propertyTaxes: 3300, garage: 1, stories: 1, cooling: 'Window Unit', heating: 'Radiator', parking: 'Driveway', roof: 'Shingle', viewType: 'Mountain', basement: 'Partial',
+        amenities: JSON.stringify(['Garden', 'Fireplace', 'Hardwood Floors', 'Detached Garage']),
+        floorPlans: JSON.stringify(['https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=1200']),
+        availability: 'Available Now',
+        retail: null
       },
       {
         title: 'Penthouse Suite with City Panorama',
@@ -321,7 +468,11 @@ async function seedData() {
         featured: 1,
         latitude: 34.0736,
         longitude: -118.4004,
-        lotSize: null, hoa: 1200, propertyTaxes: 33600, garage: 2, stories: 1, cooling: 'Central AC', heating: 'Radiant', parking: 'Valet Garage', roof: 'Flat', viewType: 'Panoramic City', basement: null
+        lotSize: null, hoa: 1200, propertyTaxes: 33600, garage: 2, stories: 1, cooling: 'Central AC', heating: 'Radiant', parking: 'Valet Garage', roof: 'Flat', viewType: 'Panoramic City', basement: null,
+        amenities: JSON.stringify(['Rooftop Terrace', 'Wine Cellar', 'Home Theater', 'Concierge', 'Private Elevator']),
+        floorPlans: JSON.stringify(['https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200', 'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1200']),
+        availability: 'Available Now',
+        retail: null
       },
       {
         title: 'Suburban Family Home',
@@ -349,7 +500,11 @@ async function seedData() {
         featured: 0,
         latitude: 34.1425,
         longitude: -118.2551,
-        lotSize: 0.35, hoa: 80, propertyTaxes: 7440, garage: 2, stories: 2, cooling: 'Central AC', heating: 'Forced Air', parking: 'Garage - Attached', roof: 'Composition', viewType: 'Neighborhood', basement: 'Unfinished'
+        lotSize: 0.35, hoa: 80, propertyTaxes: 7440, garage: 2, stories: 2, cooling: 'Central AC', heating: 'Forced Air', parking: 'Garage - Attached', roof: 'Composition', viewType: 'Neighborhood', basement: 'Unfinished',
+        amenities: JSON.stringify(['Backyard', 'Updated Kitchen', 'Two-Car Garage', 'Family Room']),
+        floorPlans: JSON.stringify(['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200']),
+        availability: 'Available Now',
+        retail: null
       },
       {
         title: 'Beachfront Condo with Direct Beach Access',
@@ -377,15 +532,52 @@ async function seedData() {
         featured: 0,
         latitude: 34.0195,
         longitude: -118.4912,
-        lotSize: null, hoa: 600, propertyTaxes: 4620, garage: 1, stories: 1, cooling: 'Central AC', heating: 'Electric', parking: 'Gated Community', roof: 'Flat', viewType: 'Ocean', basement: null
+        lotSize: null, hoa: 600, propertyTaxes: 4620, garage: 1, stories: 1, cooling: 'Central AC', heating: 'Electric', parking: 'Gated Community', roof: 'Flat', viewType: 'Ocean', basement: null,
+        amenities: JSON.stringify(['Beach Access', 'Resort Pool', 'Gym', 'Doorman', 'Elevator']),
+        floorPlans: JSON.stringify(['https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200']),
+        availability: 'Available Now',
+        retail: null
+      },
+      {
+        title: 'Retail Storefront on Main Street',
+        address: '3100 Main Street, Suite A',
+        city: 'Santa Monica',
+        state: 'CA',
+        zip: '90405',
+        country: 'US',
+        price: 950000,
+        beds: 0,
+        baths: 2,
+        sqft: 2400,
+        type: 'Retail',
+        status: 'For Sale',
+        yearBuilt: 2016,
+        description: 'Prime retail storefront in a high-traffic commercial corridor. Frontage on Main Street with large display windows, storage room, and excellent visibility. Ideal for a boutique, cafe, or showroom.',
+        agent: 'Thomas Carter',
+        agentPhone: '(213) 555-0888',
+        agentEmail: 'thomas@dreamhomes.com',
+        tags: 'retail,storefront,commercial,prime location',
+        image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
+        images: JSON.stringify(['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200', 'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=1200', 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200']),
+        video: null,
+        badge: 'Premium',
+        featured: 0,
+        latitude: 34.0183,
+        longitude: -118.4681,
+        lotSize: null, hoa: null, propertyTaxes: 11400, garage: null, stories: 1, cooling: 'Central AC', heating: 'Forced Air', parking: 'Street Parking', roof: 'Flat', viewType: 'Street', basement: null,
+        amenities: JSON.stringify(['Storefront', 'Display Windows', 'Storage Room', 'High Foot Traffic']),
+        floorPlans: JSON.stringify(['https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=1200']),
+        availability: 'Available Now',
+        retail: 'Storefront · 2,400 sqft · 40 ft frontage'
       }
     ];
 
     properties.forEach(p => {
-      db.run(`INSERT INTO properties (title, address, city, state, zip, country, price, beds, baths, sqft, type, status, yearBuilt, description, agent, agentPhone, agentEmail, tags, image, images, video, badge, featured, latitude, longitude, lotSize, hoa, propertyTaxes, garage, stories, cooling, heating, parking, roof, viewType, basement)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      db.run(`INSERT INTO properties (title, address, city, state, zip, country, price, beds, baths, sqft, type, status, yearBuilt, description, agent, agentPhone, agentEmail, tags, image, images, video, badge, featured, latitude, longitude, lotSize, hoa, propertyTaxes, garage, stories, cooling, heating, parking, roof, viewType, basement, amenities, floorPlans, availability, retail)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [p.title, p.address, p.city, p.state, p.zip, p.country || 'US', p.price, p.beds, p.baths, p.sqft, p.type, p.status, p.yearBuilt, p.description, p.agent, p.agentPhone, p.agentEmail, p.tags, p.image, p.images, p.video, p.badge, p.featured, p.latitude, p.longitude,
-         p.lotSize || null, p.hoa || null, p.propertyTaxes || null, p.garage || null, p.stories || null, p.cooling || null, p.heating || null, p.parking || null, p.roof || null, p.viewType || null, p.basement || null]);
+         p.lotSize || null, p.hoa || null, p.propertyTaxes || null, p.garage || null, p.stories || null, p.cooling || null, p.heating || null, p.parking || null, p.roof || null, p.viewType || null, p.basement || null,
+         p.amenities || null, p.floorPlans || null, p.availability || null, p.retail || null]);
     });
 
     const sponsors = [

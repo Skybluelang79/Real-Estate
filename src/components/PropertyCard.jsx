@@ -1,13 +1,15 @@
-import { useState, useEffect, useRef, useContext } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { useState, useEffect, useRef, useContext } from 'react';
+import { Link } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { CompareContext } from '../context/CompareContext';
+import { useLanguage } from '../context/LanguageContext';
 import Lightbox from './Lightbox';
 import SafeImage from './SafeImage';
 import API_URL from '../config';
 
 export default function PropertyCard({ property }) {
   const { token } = useAuth();
+  const { t } = useLanguage();
   const { addToCompare, removeFromCompare, isInCompare } = useContext(CompareContext);
   const [isFavorited, setIsFavorited] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -70,6 +72,9 @@ export default function PropertyCard({ property }) {
                 {property.badge}
               </span>
             )}
+            {property.isPrivate === 1 && (
+              <span className="property-badge badge-private">Private</span>
+            )}
             <button className={`favorite-btn ${isFavorited ? 'favorited' : ''}`} onClick={toggleFavorite} aria-label="Toggle favorite">
               <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorited ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -92,9 +97,9 @@ export default function PropertyCard({ property }) {
               {property.city}, {property.state}
             </div>
             <div className="property-stats">
-              <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 22V7l9-5 9 5v15"/><path d="M9 22V12h6v10"/></svg> {property.beds} Beds</span>
-              <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12h16a1 1 0 0 1 1 1v3a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-3a1 1 0 0 1 1-1z"/><path d="M6 12V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v7"/></svg> {property.baths} Baths</span>
-              <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> {typeof propSize === 'number' ? propSize.toLocaleString() : propSize} sqft</span>
+              <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 22V7l9-5 9 5v15"/><path d="M9 22V12h6v10"/></svg> {property.beds} {t('card.beds')}</span>
+              <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12h16a1 1 0 0 1 1 1v3a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-3a1 1 0 0 1 1-1z"/><path d="M6 12V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v7"/></svg> {property.baths} {t('card.baths')}</span>
+              <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> {typeof propSize === 'number' ? propSize.toLocaleString() : propSize} {t('card.sqft')}</span>
             </div>
             {tags.length > 0 && (
               <div className="property-tags">
@@ -104,14 +109,14 @@ export default function PropertyCard({ property }) {
               </div>
             )}
             <Link to={`/property/${propId}`} className="btn-primary property-view-btn">
-              View Property
+              {t('card.view')}
             </Link>
             <button
               className={`btn-ghost btn-sm`}
               style={{ width: '100%', marginTop: 4, fontSize: '0.8rem' }}
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); isInCompare(propId) ? removeFromCompare(propId) : addToCompare({ ...property, id: propId }); }}
             >
-              {isInCompare(propId) ? 'Remove from Compare' : 'Add to Compare'}
+              {isInCompare(propId) ? t('card.removeCompare') : t('card.addCompare')}
             </button>
           </div>
         </div>

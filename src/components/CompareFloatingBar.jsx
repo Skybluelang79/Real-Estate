@@ -1,6 +1,6 @@
-import { useContext } from 'react';
+﻿import { useContext } from 'react';
 import { CompareContext } from '../context/CompareContext';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 export default function CompareFloatingBar() {
   const { compareList, removeFromCompare } = useContext(CompareContext);

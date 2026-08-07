@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router';
 import CanvasBackground from './CanvasBackground';
+import { useLanguage } from '../context/LanguageContext';
 
 const slides = [
   {
@@ -21,16 +22,18 @@ const slides = [
 ];
 
 export default function Hero() {
+  const { t } = useLanguage();
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const intervalRef = useRef(null);
+  const heroSlides = t('hero', slides);
 
   const startInterval = useCallback(() => {
     intervalRef.current = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
+      setCurrent((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
-  }, []);
+  }, [heroSlides.length]);
 
   useEffect(() => {
     if (!paused) startInterval();
@@ -50,7 +53,7 @@ export default function Hero() {
       onMouseLeave={() => setPaused(false)}
     >
       <div className="hero-slides">
-        {slides.map((slide, i) => (
+        {heroSlides.map((slide, i) => (
           <div
             key={i}
             className={`hero-slide ${i === current ? 'hero-slide-active' : ''}`}
@@ -66,18 +69,18 @@ export default function Hero() {
 
       <div className="hero-content">
         <div className="hero-content-inner">
-          <h1 className="hero-title">{slides[current].title}</h1>
-          <p className="hero-subtitle">{slides[current].subtitle}</p>
+          <h1 className="hero-title">{heroSlides[current].title}</h1>
+          <p className="hero-subtitle">{heroSlides[current].subtitle}</p>
           <div className="hero-accent-line" />
           <Link to="/properties" className="btn-primary hero-cta">
-            Explore Properties
+            {t('heroCta')}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </Link>
         </div>
       </div>
 
       <div className="hero-dots">
-        {slides.map((_, i) => (
+        {heroSlides.map((_, i) => (
           <button
             key={i}
             className={`hero-dot ${i === current ? 'hero-dot-active' : ''}`}
@@ -89,21 +92,21 @@ export default function Hero() {
 
       <button
         className="hero-arrow hero-arrow-left"
-        onClick={() => setCurrent((prev) => (prev - 1 + slides.length) % slides.length)}
+        onClick={() => setCurrent((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
         aria-label="Previous slide"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
       <button
         className="hero-arrow hero-arrow-right"
-        onClick={() => setCurrent((prev) => (prev + 1) % slides.length)}
+        onClick={() => setCurrent((prev) => (prev + 1) % heroSlides.length)}
         aria-label="Next slide"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
       </button>
 
       <div className="hero-scroll-indicator">
-        <span>Scroll</span>
+        <span>{t('scroll')}</span>
         <svg width="16" height="24" viewBox="0 0 16 24" fill="none" stroke="currentColor" strokeWidth="1.5">
           <rect x="1" y="1" width="14" height="22" rx="7" />
           <circle cx="8" cy="8" r="2" fill="currentColor" />

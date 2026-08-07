@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback, useContext } from 'react';
-import { useParams, Link } from 'react-router-dom';
+﻿import { useState, useEffect, useRef, useCallback, useContext } from 'react';
+import { useParams, Link } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { CompareContext } from '../context/CompareContext';
 import MortgageCalculator from '../components/MortgageCalculator';
@@ -9,8 +9,11 @@ import SafeImage from '../components/SafeImage';
 import NeighborhoodInsights from '../components/NeighborhoodInsights';
 import PDFFlyer from '../components/PDFFlyer';
 import Advertisements from '../components/Advertisements';
+import Seo from '../components/Seo';
 import API_URL from '../config';
 import usePageTitle from '../hooks/usePageTitle';
+import { usePropertyQuery, usePropertiesQuery } from '../api/properties';
+import { neighborhoodForCity } from '../data/neighborhoods';
 
 function getYoutubeEmbedUrl(url) {
   if (!url) return '';
@@ -21,100 +24,163 @@ function getYoutubeEmbedUrl(url) {
 
 export default function PropertyDetail() {
   const { id } = useParams();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { addToCompare, removeFromCompare, isInCompare } = useContext(CompareContext);
-  const [property, setProperty] = useState(null);
-  usePageTitle(property ? property.name || property.title : 'Property');
-  const [similar, setSimilar] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [mainImage, setMainImage] = useState('');
   const [mainIdx, setMainIdx] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
+  const [offerOpen, setOfferOpen] = useState(false);
   const [pdfOpen, setPdfOpen] = useState(false);
+  const [inquiryForm, setInquiryForm] = useState({ name: user?.name || '', email: user?.email || '', phone: '', message: '' });
   const [inquiryMsg, setInquiryMsg] = useState('');
   const [inquiryStatus, setInquiryStatus] = useState('');
+  const [offerForm, setOfferForm] = useState({ name: user?.name || '', email: user?.email || '', phone: '', amount: '', message: '' });
+  const [offerStatus, setOfferStatus] = useState('');
   const [tourForm, setTourForm] = useState({ name: '', email: '', phone: '', date: '', time: '10:00 AM', notes: '' });
   const tourFormRef = useRef(tourForm);
   tourFormRef.current = tourForm;
   const [tourStatus, setTourStatus] = useState('');
   const [tourProperty, setTourProperty] = useState('');
+  const [openHouses, setOpenHouses] = useState([]);
+  const [ohForm, setOhForm] = useState({ name: user?.name || '', email: user?.email || '', phone: '', guests: 1 });
+  const [ohStatus, setOhStatus] = useState('');
   const videoRef = useRef(null);
   const galleryTimerRef = useRef(null);
+
+  const { data: propertyData, isLoading } = usePropertyQuery(id);
+  const property = propertyData?.property || null;
+
+  usePageTitle(property ? property.name || property.title : 'Property');
+  const [favorited, setFavorited] = useState(false);
+  const [favoritedMsg, setFavoritedMsg] = useState('');
+
+  const { data: allProps } = usePropertiesQuery({ limit: 100 });
+  const similar = (allProps?.properties || [])
+    .filter((p) => String(p.id || p._id) !== String(id))
+    .slice(0, 3);
+
+  useEffect(() => {
+    if (!property) return;
+    setMainImage(property?.image || '');
+    setMainIdx(0);
+    setTourProperty(property?.name || property?.title || '');
+    const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    const updated = [{ id: property.id, title: property.name || property.title, image: property.image, price: property.price }, ...viewed.filter(v => String(v.id) !== String(property.id))].slice(0, 6);
+    localStorage.setItem('recentlyViewed', JSON.stringify(updated));
+  }, [property]);
+
+  useEffect(() => {
+    if (!token || !property) return;
+    fetch(`${API_URL}/api/favorites`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => setFavorited((d.favorites || []).some(f => String(f.propertyId) === String(property.id))))
+      .catch(() => {});
+  }, [token, property]);
+
+  const toggleFavorite = async () => {
+    if (!token) {
+      setFavoritedMsg('Sign in to save this property.');
+      setTimeout(() => setFavoritedMsg(''), 3000);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/api/favorites/${property.id}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const d = await res.json();
+      setFavorited(d.favorited);
+    } catch {}
+  };
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/open-houses`)
+      .then(r => r.json())
+      .then(d => setOpenHouses((d.openHouses || []).filter(o => String(o.propertyId) === String(id))))
+      .catch(() => {});
+  }, [id]);
+
+  const submitOhRsvp = async (oh) => {
+    if (!ohForm.name.trim() || !ohForm.email.trim()) { setOhStatus('Please enter your name and email.'); return; }
+    try {
+      const res = await fetch(`${API_URL}/api/open-houses/${oh.id}/rsvp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ohForm),
+      });
+      const d = await res.json();
+      if (res.ok) {
+        setOhStatus('You are confirmed! See you at the open house.');
+        setOhForm({ ...ohForm, phone: '', guests: 1 });
+      } else {
+        setOhStatus(d.error || 'Could not RSVP. Please try again.');
+      }
+    } catch { setOhStatus('Could not RSVP. Please try again.'); }
+  };
 
   useEffect(() => {
     fetch(`${API_URL}/api/analytics/view`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ propertyId: id, page: `/property/${id}` }) }).catch(() => {});
   }, [id]);
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`${API_URL}/api/properties/${id}`)
-      .then((r) => r.json())
-      .then((data) => {
-        const p = data.property || data;
-        setProperty(p);
-        setMainImage(p?.image || '');
-        setMainIdx(0);
-        setTourProperty(p?.name || p?.title || '');
-        const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-        const updated = [{ id: p.id, title: p.name || p.title, image: p.image, price: p.price }, ...viewed.filter(v => String(v.id) !== String(p.id))].slice(0, 6);
-        localStorage.setItem('recentlyViewed', JSON.stringify(updated));
-        setLoading(false);
-        return fetch(`${API_URL}/api/properties`);
-      })
-      .then((r) => r.json())
-      .then((data) => {
-        const props = (data.properties || []).filter((p) => String(p.id || p._id) !== String(id));
-        setSimilar(props.slice(0, 3));
-      })
-      .catch(() => setLoading(false));
-  }, [id]);
-
-  useEffect(() => {
-    if (tourOpen) {
+    if (tourOpen || offerOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
-  }, [tourOpen]);
+  }, [tourOpen, offerOpen]);
 
   const images = property?.images && property.images.length > 0 ? property.images : (property?.image ? [property.image] : []);
+  const floorPlanList = property?.floorPlans && property.floorPlans.length > 0
+    ? property.floorPlans
+    : (property?.floorPlan ? [property.floorPlan] : []);
+  const galleryImages = [...images, ...floorPlanList];
+  const hasFloorPlans = floorPlanList.length > 0;
+  const amenities = property?.amenities && Array.isArray(property.amenities) ? property.amenities : [];
 
   useEffect(() => {
-    if (images.length <= 1) return;
+    if (galleryImages.length <= 1) return;
     galleryTimerRef.current = setInterval(() => {
-      setMainIdx(prev => (prev + 1) % images.length);
+      setMainIdx(prev => (prev + 1) % galleryImages.length);
     }, 4000);
     return () => { if (galleryTimerRef.current) clearInterval(galleryTimerRef.current); };
-  }, [images.length]);
+  }, [galleryImages.length]);
 
   useEffect(() => {
-    if (images.length > 0) {
-      setMainImage(images[mainIdx]);
+    if (galleryImages.length > 0) {
+      setMainImage(galleryImages[mainIdx]);
     }
-  }, [mainIdx, images]);
+  }, [mainIdx, galleryImages]);
 
   const openLightbox = useCallback((idx) => {
     setMainIdx(idx);
-    setMainImage(images[idx]);
+    setMainImage(galleryImages[idx]);
     setLightboxOpen(true);
-  }, [images]);
+  }, [galleryImages]);
 
-  const sendInquiry = async () => {
-    if (!inquiryMsg.trim()) return;
+  const sendInquiry = async (e) => {
+    e.preventDefault();
+    if (!inquiryForm.name.trim() || !inquiryForm.email.trim() || !inquiryMsg.trim()) {
+      setInquiryStatus('Please provide your name, email and a message.');
+      return;
+    }
     try {
-      await fetch(`${API_URL}/api/contacts`, {
+      const res = await fetch(`${API_URL}/api/contacts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Property Inquiry', email: '', message: inquiryMsg, propertyId: parseInt(id) }),
+        body: JSON.stringify({ name: inquiryForm.name, email: inquiryForm.email, phone: inquiryForm.phone, message: inquiryMsg, propertyId: parseInt(id) }),
       });
-      setInquiryStatus('Inquiry sent successfully!');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send inquiry');
+      setInquiryStatus('Inquiry sent successfully! An agent will contact you.');
       setInquiryMsg('');
+      setInquiryForm({ name: '', email: '', phone: '', message: '' });
       setTimeout(() => setInquiryStatus(''), 4000);
-    } catch {
-      setInquiryStatus('Failed to send inquiry.');
+    } catch (err) {
+      setInquiryStatus(err.message || 'Failed to send inquiry.');
     }
   };
 
@@ -142,9 +208,37 @@ export default function PropertyDetail() {
     }
   };
 
+  const submitOffer = async (e) => {
+    e.preventDefault();
+    setOfferStatus('');
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(`${API_URL}/api/properties/${id}/offers`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          name: offerForm.name,
+          email: offerForm.email,
+          phone: offerForm.phone,
+          amount: parseFloat(offerForm.amount),
+          message: offerForm.message,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit offer');
+      setOfferStatus('Offer submitted successfully! An agent will contact you shortly.');
+      setOfferForm({ name: user?.name || '', email: user?.email || '', phone: '', amount: '', message: '' });
+      setTimeout(() => { setOfferStatus(''); setOfferOpen(false); }, 3000);
+    } catch (err) {
+      setOfferStatus(err.message || 'Failed to submit offer.');
+    }
+  };
+
   const displayName = property?.name || property?.title || 'Property';
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const shareText = `Check out ${displayName} on Dream Homes`;
+  const neighborhood = neighborhoodForCity(property?.city);
 
   const shareSocial = (platform) => {
     const urls = {
@@ -159,7 +253,7 @@ export default function PropertyDetail() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <section className="section properties-page">
         <div className="container">
@@ -194,6 +288,28 @@ export default function PropertyDetail() {
 
   return (
     <section className="section properties-page">
+      <Seo
+        title={displayName}
+        description={`${displayName} in ${property.city}, ${property.state} — ${priceDisplay || ''} | ${property.beds} beds, ${property.baths} baths, ${displaySize.toLocaleString()} sqft. View details and schedule a tour at Dream Homes.`}
+        image={property.image}
+        path={`/property/${id}`}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'RealEstateListing',
+          name: displayName,
+          url: shareUrl,
+          description: property.description,
+          image: property.image,
+          offers: { '@type': 'Offer', price: property.price, priceCurrency: 'USD' },
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: property.address,
+            addressLocality: property.city,
+            addressRegion: property.state,
+            postalCode: property.zipcode || property.zip,
+          },
+        }}
+      />
       <div className="container">
         <Breadcrumbs current={displayName} />
         <div className="detail-layout">
@@ -206,31 +322,61 @@ export default function PropertyDetail() {
               </div>
             </button>
             <div className="detail-thumbs">
-              {images.map((img, i) => (
+              {galleryImages.map((img, i) => (
                 <button
                   key={i}
-                  className={`detail-thumb ${mainIdx === i ? 'detail-thumb-active' : ''}`}
+                  className={`detail-thumb ${mainIdx === i ? 'detail-thumb-active' : ''} ${i >= images.length && hasFloorPlans ? 'detail-thumb-floorplan' : ''}`}
                   onClick={() => { setMainIdx(i); setMainImage(img); if (galleryTimerRef.current) { clearInterval(galleryTimerRef.current); } }}
                 >
                   <SafeImage src={img} alt={`${displayName} ${i + 1}`} />
+                  {i >= images.length && hasFloorPlans && <span className="floorplan-label">Floor Plan</span>}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="detail-sidebar">
-            <div className="detail-price-tag">{priceDisplay}</div>
+            <div className="detail-price-row">
+              <div className="detail-price-tag">{priceDisplay}</div>
+              {property.status && property.status !== 'For Sale' && (
+                <span className={`detail-status-badge detail-status-${String(property.status).toLowerCase().replace(/\s+/g, '-')}`}>{property.status}</span>
+              )}
+              {property.availability && (
+                <span className="detail-availability-badge">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                  {property.availability}
+                </span>
+              )}
+              {property.type === 'Retail' && (
+                <span className="detail-availability-badge detail-retail-badge">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 9l8-5 8 5v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9z"/><path d="M9 20v-6h6v6"/></svg>
+                  Retail {property.retail ? `· ${property.retail}` : ''}
+                </span>
+              )}
+              <button className={`detail-fav-btn ${favorited ? 'detail-fav-btn-active' : ''}`} onClick={toggleFavorite} aria-label="Save to favorites" title={favorited ? 'Remove from favorites' : 'Save to favorites'}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={favorited ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+              </button>
+              {favoritedMsg && <span className="detail-fav-msg">{favoritedMsg}</span>}
+            </div>
             <h1 className="detail-title">{displayName}</h1>
             <div className="detail-location">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               {[property.address, property.city, property.state, property.zipcode, property.country].filter(Boolean).join(', ')}
             </div>
+            {neighborhood && (
+              <Link to={`/neighborhoods/${neighborhood.slug}`} className="neighborhood-link">
+                Explore the {neighborhood.name} Neighborhood Guide →
+              </Link>
+            )}
 
             <div className="detail-stats-row">
               <div className="detail-stat"><span className="detail-stat-num">{property.beds}</span><span className="detail-stat-label">Beds</span></div>
               <div className="detail-stat"><span className="detail-stat-num">{property.baths}</span><span className="detail-stat-label">Baths</span></div>
               <div className="detail-stat"><span className="detail-stat-num">{displaySize.toLocaleString()}</span><span className="detail-stat-label">Sq Ft</span></div>
               {property.yearBuilt && <div className="detail-stat"><span className="detail-stat-num">{property.yearBuilt}</span><span className="detail-stat-label">Year</span></div>}
+              {property.price && (property.sqft || property.size) && (
+                <div className="detail-stat"><span className="detail-stat-num">${Math.round(Number(property.price) / Number(property.sqft || property.size)).toLocaleString()}</span><span className="detail-stat-label">Per Sq Ft</span></div>
+              )}
             </div>
 
             {property.badge && <span className={`property-badge badge-${property.badge.toLowerCase().replace(/\s+/g, '-')}`} style={{ alignSelf: 'flex-start' }}>{property.badge}</span>}
@@ -262,6 +408,43 @@ export default function PropertyDetail() {
               </div>
             )}
 
+            {amenities.length > 0 && (
+              <div className="detail-section">
+                <h3>Amenities</h3>
+                <div className="detail-amenities">
+                  {amenities.map((a, i) => (
+                    <span key={i} className="detail-amenity">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                      {a}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {hasFloorPlans && (
+              <div className="detail-section">
+                <h3>Floor Plans</h3>
+                <div className="detail-floorplans">
+                  {floorPlanList.map((fp, i) => (
+                    <button
+                      key={i}
+                      className="detail-floorplan-card"
+                      onClick={() => {
+                        const idx = images.length + i;
+                        setMainIdx(idx);
+                        setMainImage(galleryImages[idx]);
+                        if (galleryTimerRef.current) clearInterval(galleryTimerRef.current);
+                      }}
+                    >
+                      <SafeImage src={fp} alt={`Floor plan ${i + 1}`} />
+                      <span>Floor Plan {floorPlanList.length > 1 ? i + 1 : ''}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="detail-property-details">
               <h3>Property Details</h3>
               <div className="detail-details-grid">
@@ -289,9 +472,62 @@ export default function PropertyDetail() {
               </div>
             )}
 
+            {openHouses.length > 0 && (
+              <div className="detail-oh-card">
+                <div className="detail-oh-head">
+                  <span className="oh-icon">OPEN</span>
+                  <h3>Upcoming Open House</h3>
+                </div>
+                {openHouses.map(oh => (
+                  <div className="detail-oh-item" key={oh.id}>
+                    <div className="detail-oh-when">
+                      <div className="detail-oh-date">{new Date(oh.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</div>
+                      <div className="detail-oh-time">{oh.startTime}{oh.endTime ? ` – ${oh.endTime}` : ''}</div>
+                    </div>
+                    {oh.description && <p className="detail-oh-desc">{oh.description}</p>}
+                    <form className="detail-oh-form" onSubmit={e => { e.preventDefault(); submitOhRsvp(oh); }}>
+                      <div className="form-row-2">
+                        <input required placeholder="Name" className="admin-input" value={ohForm.name} onChange={e => setOhForm({ ...ohForm, name: e.target.value })} />
+                        <input required type="email" placeholder="Email" className="admin-input" value={ohForm.email} onChange={e => setOhForm({ ...ohForm, email: e.target.value })} />
+                      </div>
+                      <div className="form-row-2">
+                        <input placeholder="Phone" className="admin-input" value={ohForm.phone} onChange={e => setOhForm({ ...ohForm, phone: e.target.value })} />
+                        <select className="admin-input" value={ohForm.guests} onChange={e => setOhForm({ ...ohForm, guests: e.target.value })}>
+                          {[1, 2, 3, 4, 5, 6].map(g => <option key={g} value={g}>{g} {g === 1 ? 'guest' : 'guests'}</option>)}
+                        </select>
+                      </div>
+                      <button type="submit" className="btn-primary btn-block">RSVP to Open House</button>
+                      {ohStatus && <p className="form-status-msg">{ohStatus}</p>}
+                    </form>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="detail-actions">
-              <button className="btn-primary" onClick={() => setTourOpen(true)}>Schedule Tour</button>
+              {property.status !== 'Sold' && (
+                <button className="btn-primary" onClick={() => setOfferOpen(true)}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6 }}><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  Make an Offer
+                </button>
+              )}
+              <button className="btn-ghost" onClick={() => setTourOpen(true)}>Schedule Tour</button>
               <button className="btn-ghost" onClick={() => setCalcOpen(true)}>Calculate Mortgage</button>
+              {hasFloorPlans && (
+                <button
+                  className="btn-ghost floorplan-btn"
+                  onClick={() => {
+                    const idx = images.length;
+                    setMainIdx(idx);
+                    setMainImage(galleryImages[idx]);
+                    if (galleryTimerRef.current) clearInterval(galleryTimerRef.current);
+                    openLightbox(idx);
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6 }}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                  Floor Plan
+                </button>
+              )}
               {hasVideo && <button className="btn-ghost video-btn" onClick={scrollToVideo}>Virtual Tour</button>}
               <button className="btn-ghost" onClick={() => setPdfOpen(true)}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -331,9 +567,16 @@ export default function PropertyDetail() {
 
             <div className="detail-inquiry">
               <h3>Send an Inquiry</h3>
-              <textarea value={inquiryMsg} onChange={(e) => setInquiryMsg(e.target.value)} placeholder="Hi, I'm interested in this property..." rows={3} />
-              <button className="btn-primary" onClick={sendInquiry}>Send Inquiry</button>
-              {inquiryStatus && <p className="form-status-msg">{inquiryStatus}</p>}
+              <form onSubmit={sendInquiry} className="tour-form">
+                <div className="form-row-2">
+                  <input type="text" placeholder="Your Name" value={inquiryForm.name} onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })} required />
+                  <input type="email" placeholder="Your Email" value={inquiryForm.email} onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })} required />
+                </div>
+                <input type="tel" placeholder="Phone (optional)" value={inquiryForm.phone} onChange={(e) => setInquiryForm({ ...inquiryForm, phone: e.target.value })} />
+                <textarea value={inquiryMsg} onChange={(e) => setInquiryMsg(e.target.value)} placeholder="Hi, I'm interested in this property..." rows={3} required />
+                <button type="submit" className="btn-primary">Send Inquiry</button>
+                {inquiryStatus && <p className="form-status-msg">{inquiryStatus}</p>}
+              </form>
             </div>
           </div>
         </div>
@@ -400,11 +643,11 @@ export default function PropertyDetail() {
 
       <Lightbox
         isOpen={lightboxOpen}
-        images={images}
+        images={galleryImages}
         currentIndex={mainIdx}
         imageAlt={displayName}
         onClose={() => setLightboxOpen(false)}
-        onIndexChange={(idx) => { setMainIdx(idx); setMainImage(images[idx]); }}
+        onIndexChange={(idx) => { setMainIdx(idx); setMainImage(galleryImages[idx]); }}
       />
 
       <MortgageCalculator isOpen={calcOpen} onClose={() => setCalcOpen(false)} />
@@ -432,6 +675,30 @@ export default function PropertyDetail() {
               <input type="text" placeholder="Additional notes..." value={tourForm.notes} onChange={(e) => setTourForm({ ...tourForm, notes: e.target.value })} />
               <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>Request Tour</button>
               {tourStatus && <p className="form-status-msg">{tourStatus}</p>}
+            </form>
+          </div>
+        </div>
+      )}
+
+      {offerOpen && (
+        <div className="modal-overlay" onClick={() => setOfferOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setOfferOpen(false)}>×</button>
+            <h2>Make an Offer</h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>{displayName} — {priceDisplay}</p>
+            <form onSubmit={submitOffer} className="tour-form">
+              <div className="form-row-2">
+                <input type="text" placeholder="Your Name" value={offerForm.name} onChange={(e) => setOfferForm({ ...offerForm, name: e.target.value })} required />
+                <input type="email" placeholder="Your Email" value={offerForm.email} onChange={(e) => setOfferForm({ ...offerForm, email: e.target.value })} required />
+              </div>
+              <div className="form-row-2">
+                <input type="tel" placeholder="Phone" value={offerForm.phone} onChange={(e) => setOfferForm({ ...offerForm, phone: e.target.value })} />
+                <input type="number" placeholder="Offer Amount ($)" min="1" value={offerForm.amount} onChange={(e) => setOfferForm({ ...offerForm, amount: e.target.value })} required />
+              </div>
+              <textarea rows={3} placeholder="Message to the seller (optional)..." value={offerForm.message} onChange={(e) => setOfferForm({ ...offerForm, message: e.target.value })} />
+              <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>Submit Offer</button>
+              {offerStatus && <p className="form-status-msg">{offerStatus}</p>}
+              {!token && <p className="admin-sub-text" style={{ textAlign: 'center', marginTop: 8 }}>Sign in to track this offer from your profile.</p>}
             </form>
           </div>
         </div>

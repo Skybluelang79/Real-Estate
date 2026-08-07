@@ -1,9 +1,19 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router';
+import NewsletterSignup from './NewsletterSignup';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Footer() {
+  const { t } = useLanguage();
   return (
     <footer className="footer">
       <div className="footer-inner">
+        <div className="footer-newsletter">
+          <div className="footer-newsletter-text">
+            <h3>{t('footer.newsletterTitle')}</h3>
+            <p>{t('footer.newsletterDesc')}</p>
+          </div>
+          <NewsletterSignup compact />
+        </div>
         <div className="footer-grid">
           <div className="footer-brand">
             <Link to="/" className="logo">
@@ -19,24 +29,33 @@ export default function Footer() {
               </svg>
               <span className="logo-text">Dream Homes</span>
             </Link>
-            <p className="footer-tagline">Finding your perfect home since 2026.</p>
+            <p className="footer-tagline">{t('footer.tagline')}</p>
           </div>
           <div className="footer-links-col">
-            <h4>Quick Links</h4>
-            <Link to="/">Home</Link>
-            <Link to="/properties">Properties</Link>
-            <Link to="/about">About</Link>
-            <Link to="/contact">Contact</Link>
+            <h4>{t('footer.quickLinks')}</h4>
+            <Link to="/">{t('nav.home')}</Link>
+            <Link to="/properties">{t('nav.properties')}</Link>
+            <Link to="/about">{t('nav.about')}</Link>
+            <Link to="/contact">{t('nav.contact')}</Link>
           </div>
           <div className="footer-links-col">
-            <h4>Contact</h4>
+            <h4>{t('footer.resources')}</h4>
+            <Link to="/financing">{t('footer.financing')}</Link>
+            <Link to="/valuation">{t('footer.valuation')}</Link>
+            <Link to="/moving">{t('footer.moving')}</Link>
+            <Link to="/agents">{t('footer.ourAgents')}</Link>
+            <Link to="/neighborhoods">{t('nav.neighborhoods')}</Link>
+            <Link to="/private">{t('nav.private')}</Link>
+          </div>
+          <div className="footer-links-col">
+            <h4>{t('footer.contact')}</h4>
             <span>123 Dream Street</span>
             <span>Los Angeles, CA 90001</span>
             <span>info@dreamhomes.com</span>
             <span>(800) 555-HOME</span>
           </div>
           <div className="footer-links-col">
-            <h4>Follow Us</h4>
+            <h4>{t('footer.followUs')}</h4>
             <div className="footer-socials">
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
@@ -54,7 +73,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="footer-bottom">
-          <span>&copy; 2026 Dream Homes Real Estate. All rights reserved.</span>
+          <span>&copy; 2026 {t('footer.rights')}</span>
         </div>
       </div>
     </footer>

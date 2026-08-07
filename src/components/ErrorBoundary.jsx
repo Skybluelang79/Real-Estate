@@ -1,5 +1,5 @@
-import { Component } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { Component } from 'react';
+import { Link } from 'react-router';
 
 export default class ErrorBoundary extends Component {
   constructor(props) {

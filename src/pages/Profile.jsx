@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+﻿import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import SafeImage from '../components/SafeImage';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -14,6 +14,7 @@ export default function Profile() {
   const [favorites, setFavorites] = useState([]);
   const [tours, setTours] = useState([]);
   const [savedSearches, setSavedSearches] = useState([]);
+  const [offers, setOffers] = useState([]);
 
   useEffect(() => {
     if (!user) navigate('/signin');
@@ -27,7 +28,22 @@ export default function Profile() {
       .then(r => r.json()).then(d => setTours(d.tours || [])).catch(() => {});
     fetch(`${API_URL}/api/saved-searches`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json()).then(d => setSavedSearches(d.savedSearches || [])).catch(() => {});
+    fetch(`${API_URL}/api/offers/mine`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(d => setOffers(d.offers || [])).catch(() => {});
   }, [token]);
+
+  const toggleAlert = async (s) => {
+    try {
+      const res = await fetch(`${API_URL}/api/saved-searches/${s.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ alertEnabled: !s.alertEnabled }),
+      });
+      if (res.ok) {
+        setSavedSearches(prev => prev.map(x => x.id === s.id ? { ...x, alertEnabled: !s.alertEnabled } : x));
+      }
+    } catch {}
+  };
 
   if (!user) return null;
 
@@ -50,12 +66,13 @@ export default function Profile() {
           <div className="profile-stat-card"><div className="profile-stat-num">{favorites.length}</div><div className="profile-stat-label">Favorites</div></div>
           <div className="profile-stat-card"><div className="profile-stat-num">{tours.length}</div><div className="profile-stat-label">Tours</div></div>
           <div className="profile-stat-card"><div className="profile-stat-num">{savedSearches.length}</div><div className="profile-stat-label">Saved Searches</div></div>
+          <div className="profile-stat-card"><div className="profile-stat-num">{offers.length}</div><div className="profile-stat-label">Offers</div></div>
         </div>
 
         <div className="admin-tabs" style={{ marginTop: '32px' }}>
-          {['favorites', 'tours', 'searches'].map(t => (
+          {['favorites', 'tours', 'searches', 'offers'].map(t => (
             <button key={t} className={`admin-tab ${tab === t ? 'admin-tab-active' : ''}`} onClick={() => setTab(t)}>
-              {t === 'favorites' ? 'Favorites' : t === 'tours' ? 'My Tours' : 'Saved Searches'}
+              {t === 'favorites' ? 'Favorites' : t === 'tours' ? 'My Tours' : t === 'searches' ? 'Saved Searches' : 'My Offers'}
             </button>
           ))}
         </div>
@@ -117,9 +134,38 @@ export default function Profile() {
                 {savedSearches.map((s, i) => (
                   <div key={s.id || i} className="saved-search-card">
                     <div><strong>{s.name || `Search ${i + 1}`}</strong><span className="admin-sub-text">{s.filters ? JSON.stringify(s.filters) : '—'}</span></div>
-                    <Link to={`/properties${s.filters?.search ? `?search=${encodeURIComponent(s.filters.search)}` : ''}`} className="btn-ghost">Run</Link>
+                    <div className="saved-search-actions">
+                      <button className={`btn-ghost btn-sm ${s.alertEnabled ? 'saved-search-alert-on' : ''}`} onClick={() => toggleAlert(s)}>
+                        {s.alertEnabled ? '🔔 Alerts On' : '🔕 Alerts Off'}
+                      </button>
+                      <Link to={`/properties${s.filters?.search ? `?search=${encodeURIComponent(s.filters.search)}` : ''}`} className="btn-ghost">Run</Link>
+                    </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === 'offers' && (
+          <div className="admin-tab-content admin-tab-visible">
+            {offers.length === 0 ? (
+              <div className="admin-empty-state"><p>No offers made yet.</p><Link to="/properties" className="btn-primary">Browse Properties</Link></div>
+            ) : (
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead><tr><th>Property</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+                  <tbody>
+                    {offers.map(o => (
+                      <tr key={o.id} className="admin-table-row">
+                        <td><strong>{o.propertyTitle || `Property #${o.propertyId}`}</strong></td>
+                        <td className="admin-price">${(o.amount || 0).toLocaleString()}</td>
+                        <td>{o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td>
+                        <td><span className={`admin-status-badge admin-status-${o.status || 'pending'}`}>{o.status || 'pending'}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

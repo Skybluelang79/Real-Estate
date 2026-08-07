@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+﻿import { useState } from 'react';
+import { useNavigate, Link } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import usePageTitle from '../hooks/usePageTitle';
 
@@ -32,7 +32,7 @@ export default function SignUp() {
     e.preventDefault();
     setError('');
     if (password !== confirm) { setError('Passwords do not match'); return; }
-    if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
+    if (password.length < 8) { setError('Password must be at least 8 characters'); return; }
     if (!agreed) { setError('You must agree to the terms'); return; }
     setLoading(true);
     try {
@@ -52,7 +52,7 @@ export default function SignUp() {
       <div className="auth-page">
         <div className="auth-card">
           <div className="auth-card-header">
-            <span className="auth-card-icon">🏡</span>
+            <span className="auth-card-icon">ðŸ¡</span>
             <h2>Create Account</h2>
             <p>Join Dream Homes and start exploring</p>
           </div>
@@ -79,7 +79,7 @@ export default function SignUp() {
               <div className="auth-input-wrap">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 <input type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a strong password" required />
-                <button type="button" className="pw-toggle" onClick={() => setShowPw(!showPw)}>{showPw ? '🙈' : '👁️'}</button>
+                <button type="button" className="pw-toggle" onClick={() => setShowPw(!showPw)}>{showPw ? '🙈' : 'ðŸ‘ï¸'}</button>
               </div>
               {password.length > 0 && (
                 <div className="pw-strength">

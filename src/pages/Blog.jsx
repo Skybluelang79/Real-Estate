@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { useState, useEffect } from 'react';
+import { Link } from 'react-router';
 import API_URL from '../config';
 
 export default function Blog() {
