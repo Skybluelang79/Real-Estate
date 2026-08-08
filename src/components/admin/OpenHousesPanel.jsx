@@ -167,7 +167,7 @@ export default function OpenHousesPanel({ token, properties }) {
                       <div className="admin-list-title">{r.name}</div>
                       <div className="admin-list-sub">{r.email}{r.phone ? ` · ${r.phone}` : ''}</div>
                     </div>
-                    <span className="admin-badge">{r.attendees || 1} attending</span>
+                    <span className="admin-badge">{r.guests || 1} attending</span>
                   </div>
                 ))}
               </div>

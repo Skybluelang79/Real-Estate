@@ -258,7 +258,7 @@ export default function Admin() {
     yearBuilt: '', description: '', agent: '', agentPhone: '', agentEmail: '',
     tags: '', image: '', images: '', video: '', floorPlan: '', isPrivate: 0, badge: 'New', featured: false, latitude: '', longitude: '',
     lotSize: '', hoa: '', propertyTaxes: '', garage: '', stories: '', cooling: '', heating: '', parking: '', roof: '', viewType: '', basement: '',
-    amenities: '', floorPlans: '', availability: 'Available Now', retail: ''
+    amenities: '', floorPlans: '', availability: 'Available Now', retail: '', status: 'For Sale'
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState('title');
@@ -339,7 +339,7 @@ export default function Admin() {
       yearBuilt: '', description: '', agent: '', agentPhone: '', agentEmail: '',
       tags: '', image: '', images: '', video: '', floorPlan: '', isPrivate: 0, badge: 'New', featured: false, latitude: '', longitude: '',
       lotSize: '', hoa: '', propertyTaxes: '', garage: '', stories: '', cooling: '', heating: '', parking: '', roof: '', viewType: '', basement: '',
-      amenities: '', floorPlans: '', availability: 'Available Now', retail: ''
+      amenities: '', floorPlans: '', availability: 'Available Now', retail: '', status: 'For Sale'
     });
     setEditId(null);
     setFormOpen(false);
@@ -362,7 +362,8 @@ export default function Admin() {
       featured: p.featured || false, latitude: p.latitude || '', longitude: p.longitude || '',
       lotSize: p.lotSize || '', hoa: p.hoa || '', propertyTaxes: p.propertyTaxes || '', garage: p.garage || '', stories: p.stories || '',
       cooling: p.cooling || '', heating: p.heating || '', parking: p.parking || '', roof: p.roof || '', viewType: p.viewType || '', basement: p.basement || '',
-      amenities: amenitiesStr, floorPlans: floorPlansStr, availability: p.availability || 'Available Now', retail: p.retail || ''
+      amenities: amenitiesStr, floorPlans: floorPlansStr, availability: p.availability || 'Available Now', retail: p.retail || '',
+      status: p.status || 'For Sale'
     });
     setEditId(p.id || p._id);
     setFormOpen(true);
@@ -891,7 +892,7 @@ export default function Admin() {
                 <div className="form-row-3">
                   <div className="form-group"><label>City</label><input type="text" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} required /></div>
                   <div className="form-group"><label>State</label><input type="text" value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })} required /></div>
-                  <div className="form-group"><label>Zipcode</label><input type="text" value={formData.zip} onChange={(e) => setFormData({ ...formData, zip: e.target.value })} /></div>
+                  <div className="form-group"><label>Zipcode</label><input type="text" value={formData.zip} onChange={(e) => setFormData({ ...formData, zip: e.target.value })} required /></div>
                   <div className="form-group"><label>Country</label><input type="text" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} placeholder="US" /></div>
                 </div>
                 <div className="form-row-3">

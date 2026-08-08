@@ -30,7 +30,7 @@ export default function UsersPanel({ token, currentUser }) {
     await fetch(`${API_URL}/api/users/${u.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ isAdmin: u.isAdmin ? 0 : 1 }),
+      body: JSON.stringify({ isAdmin: u.isAdmin ? false : true }),
     });
     load();
   };
