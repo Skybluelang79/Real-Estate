@@ -22,13 +22,29 @@ const slides = [
   },
 ];
 
-export default function Hero() {
+export default function Hero({ properties = [] }) {
   const { t } = useLanguage();
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const intervalRef = useRef(null);
-  const heroSlides = t('hero', slides);
+  const brandSlides = t('hero', slides);
+  const heroSlides = Array.isArray(properties) && properties.length > 0
+    ? properties.map((p) => ({
+        image: p.image,
+        title: p.title || p.name,
+        subtitle: `${p.city || ''}${p.city && p.state ? ', ' : ''}${p.state || ''} · ${formatPrice(p.price)}`,
+        link: `/property/${p.id || p._id}`,
+        price: p.price,
+      }))
+    : brandSlides.map((s) => ({ ...s, link: '/properties' }));
+
+  const formatPrice = (price) => {
+    const num = parseInt(String(price).replace(/[$,]/g, ''), 10);
+    if (num >= 1000000) return `$${(num / 1000000).toFixed(2)}M`;
+    if (num >= 1000) return `$${(num / 1000).toFixed(0)}K`;
+    return `$${(num || 0).toLocaleString()}`;
+  };
 
   const startInterval = useCallback(() => {
     intervalRef.current = setInterval(() => {
@@ -73,8 +89,8 @@ export default function Hero() {
           <h1 className="hero-title">{heroSlides[current].title}</h1>
           <p className="hero-subtitle">{heroSlides[current].subtitle}</p>
           <div className="hero-accent-line" />
-          <Link to="/properties" className="btn-primary hero-cta">
-            {t('heroCta')}
+          <Link to={heroSlides[current].link || '/properties'} className="btn-primary hero-cta">
+            {heroSlides[current].link && heroSlides[current].link !== '/properties' ? t('home.viewListing') || 'View Listing' : t('heroCta')}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </Link>
           <HomeSearch />

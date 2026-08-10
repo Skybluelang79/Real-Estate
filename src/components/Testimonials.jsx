@@ -12,6 +12,14 @@ export default function Testimonials() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (testimonials.length <= 1) return;
+    const id = setInterval(() => {
+      setIndex((prev) => (prev + 1) % testimonials.length);
+    }, 6000);
+    return () => clearInterval(id);
+  }, [testimonials.length]);
+
   if (testimonials.length === 0) return null;
 
   const t = testimonials[index];

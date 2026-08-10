@@ -11,6 +11,14 @@ import CtaBanner from './components/CtaBanner'
 import Sponsors from './components/Sponsors'
 import Advertisements from './components/Advertisements'
 import Testimonials from './components/Testimonials'
+import JustListed from './components/JustListed'
+import OpenHousesSection from './components/OpenHousesSection'
+import HomeTools from './components/HomeTools'
+import AgentSpotlight from './components/AgentSpotlight'
+import BlogPreview from './components/BlogPreview'
+import NeighborhoodPriceTrends from './components/NeighborhoodPriceTrends'
+import NewsletterPopup from './components/NewsletterPopup'
+import SaveSearchPrompt from './components/SaveSearchPrompt'
 import CompareFloatingBar from './components/CompareFloatingBar'
 import BackToTop from './components/BackToTop'
 import Breadcrumbs from './components/Breadcrumbs'
@@ -46,6 +54,7 @@ const Neighborhoods = lazy(() => import('./pages/Neighborhoods'))
 const NeighborhoodDetail = lazy(() => import('./pages/NeighborhoodDetail'))
 const AgentDetail = lazy(() => import('./pages/AgentDetail'))
 const NotFound = lazy(() => import('./pages/NotFound'))
+const MiniMap = lazy(() => import('./components/MiniMap'))
 
 const ROUTE_SEO = {
   '/': { title: 'Luxury Real Estate', description: 'Dream Homes — luxury real estate brokerage. Discover curated oceanfront estates, penthouses and exclusive listings across Los Angeles.' },
@@ -77,8 +86,10 @@ function Home() {
 
   return (
     <>
-      <Hero />
+      <Hero properties={properties} />
+      <SaveSearchPrompt />
       <StatsSection />
+      <JustListed />
       <section className="section featured-section">
         <div className="container">
           <div className="section-header">
@@ -118,11 +129,20 @@ function Home() {
         </div>
       </section>
       <ServicesSection />
+      <HomeTools />
+      <OpenHousesSection />
+      <NeighborhoodPriceTrends />
       <NeighborhoodsPreview />
+      <AgentSpotlight />
+      <Suspense fallback={null}>
+        <MiniMap />
+      </Suspense>
       <Testimonials />
+      <BlogPreview />
       <CtaBanner />
       <Advertisements />
       <Sponsors />
+      <NewsletterPopup />
     </>
   );
 }
