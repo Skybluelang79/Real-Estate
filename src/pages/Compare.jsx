@@ -41,7 +41,7 @@ export default function Compare() {
                   {compareList.map(p => (
                     <th key={p.id}>
                       <button className="compare-remove-btn" onClick={() => removeFromCompare(p.id)}>&times;</button>
-                      <img src={p.image || '/placeholder.jpg'} alt={p.title} className="compare-img" />
+                      <img src={p.image || '/placeholder.jpg'} alt={p.title} className="compare-img" loading="lazy" />
                       <h3>{p.title}</h3>
                     </th>
                   ))}

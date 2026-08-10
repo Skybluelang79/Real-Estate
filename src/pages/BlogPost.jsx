@@ -25,7 +25,7 @@ export default function BlogPost() {
         <article className="blog-post-content">
           <h1>{post.title}</h1>
           <p className="blog-meta">By {post.author || 'Admin'} &middot; {new Date(post.createdAt).toLocaleDateString()}</p>
-          {post.image && <img src={`${API_URL}${post.image}`} alt={post.title} className="blog-hero" />}
+          {post.image && <img src={`${API_URL}${post.image}`} alt={post.title} className="blog-hero" loading="lazy" />}
           <div className="blog-body" dangerouslySetInnerHTML={{ __html: post.content }} />
           {post.tags && post.tags.length > 0 && (
             <div className="blog-tags">

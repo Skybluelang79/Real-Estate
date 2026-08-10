@@ -1,10 +1,9 @@
-import { useRef } from 'react';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import { useRef, useState } from 'react';
 import API_URL from '../config';
 
 export default function PDFFlyer({ property, onClose }) {
   const flyerRef = useRef(null);
+  const [building, setBuilding] = useState(false);
 
   const formatPrice = (price) => {
     const num = parseInt(String(price).replace(/[$,]/g, ''));
@@ -12,14 +11,26 @@ export default function PDFFlyer({ property, onClose }) {
   };
 
   const download = async () => {
-    const canvas = await html2canvas(flyerRef.current, { scale: 2, useCORS: true });
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfW = pdf.internal.pageSize.getWidth();
-    const pdfH = (canvas.height / canvas.width) * pdfW;
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
-    pdf.save(`${(property.title || property.name || 'property').replace(/\s+/g, '-').toLowerCase()}-flyer.pdf`);
-    onClose();
+    if (building) return;
+    setBuilding(true);
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf'),
+      ]);
+      const canvas = await html2canvas(flyerRef.current, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = (canvas.height / canvas.width) * pdfW;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+      pdf.save(`${(property.title || property.name || 'property').replace(/\s+/g, '-').toLowerCase()}-flyer.pdf`);
+      onClose();
+    } catch (err) {
+      console.error('Failed to generate PDF', err);
+    } finally {
+      setBuilding(false);
+    }
   };
 
   const name = property.title || property.name || 'Property';
@@ -39,7 +50,7 @@ export default function PDFFlyer({ property, onClose }) {
             <p>Luxury Real Estate</p>
           </div>
           <div className="pdf-hero">
-            <img src={property.image || `${API_URL}/placeholder.jpg`} alt={name} crossOrigin="anonymous" />
+            <img src={property.image || `${API_URL}/placeholder.jpg`} alt={name} crossOrigin="anonymous" loading="lazy" />
           </div>
           <div className="pdf-body">
             <div className="pdf-price">{formatPrice(property.price)}</div>
@@ -62,7 +73,9 @@ export default function PDFFlyer({ property, onClose }) {
         </div>
         <div className="pdf-actions">
           <button className="btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn-primary" onClick={download}>Download PDF</button>
+          <button className="btn-primary" onClick={download} disabled={building}>
+            {building ? 'Preparing PDF…' : 'Download PDF'}
+          </button>
         </div>
       </div>
     </div>

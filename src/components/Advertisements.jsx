@@ -55,7 +55,7 @@ function AdBanner({ ad, isActive }) {
       <AdCanvas ad={ad} isActive={isActive} />
       {ad.image && (
         <div className={`ad-banner-img-wrap ${imgLoaded ? 'ad-img-loaded' : ''}`}>
-          <img src={ad.image} alt={ad.title} onLoad={() => setImgLoaded(true)} />
+          <img src={ad.image} alt={ad.title} onLoad={() => setImgLoaded(true)} loading="lazy" />
           <div className="ad-gradient-overlay" />
         </div>
       )}

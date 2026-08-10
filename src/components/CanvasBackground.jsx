@@ -16,12 +16,24 @@ export default function CanvasBackground({ className }) {
     let scrollSpeed = 0;
     let lastScrollY = 0;
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     function resize() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
     resize();
     window.addEventListener('resize', resize);
+
+    if (prefersReducedMotion) {
+      ctx.fillStyle = 'rgba(201, 168, 76, 0.4)';
+      for (let i = 0; i < 40; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      return () => window.removeEventListener('resize', resize);
+    }
 
     window.addEventListener('mousemove', (e) => {
       mouseX = e.clientX;

@@ -1,5 +1,6 @@
 const translations = {
   en: {
+    skipToContent: 'Skip to content',
     nav: { home: 'Home', properties: 'Properties', agents: 'Agents', blog: 'Blog', about: 'About', contact: 'Contact', neighborhoods: 'Neighborhoods', private: 'Private Collection' },
     header: { searchPlaceholder: 'Search properties...', calculator: 'Calculator', mapView: 'Map View', profile: 'Profile', admin: 'Admin Dashboard', logout: 'Logout', signIn: 'Sign In', signUp: 'Sign Up', menu: 'Menu' },
     hero: [
@@ -12,6 +13,8 @@ const translations = {
     home: {
       featuredTitle: 'Featured Properties',
       featuredSub: 'Handpicked homes that define luxury and comfort',
+      recentlyViewed: 'Recently Viewed',
+      recentlyViewedSub: 'Pick up where you left off',
       emptyState: 'No properties available yet.',
       browseProperties: 'Browse Properties',
       viewListing: 'View Listing',
@@ -216,6 +219,7 @@ const translations = {
   zh: {
     nav: { home: '首页', properties: '房产', agents: '经纪人', blog: '博客', about: '关于我们', contact: '联系我们', neighborhoods: '社区', private: '私享收藏' },
     header: { searchPlaceholder: '搜索房产...', calculator: '计算器', mapView: '地图视图', profile: '个人中心', admin: '管理后台', logout: '退出登录', signIn: '登录', signUp: '注册', menu: '菜单' },
+    skipToContent: '跳到主要内容',
     hero: [
       { title: '优雅与舒适交汇之地', subtitle: '发现精心甄选的全球最非凡住宅' },
       { title: '非凡居住空间', subtitle: '为品味卓越人士精心打造的理想居所' },
@@ -226,6 +230,8 @@ const translations = {
     home: {
       featuredTitle: '精选房产',
       featuredSub: '精心挑选、诠释奢华与舒适的理想家园',
+      recentlyViewed: '最近浏览',
+      recentlyViewedSub: '从上次浏览的地方继续',
       emptyState: '暂无可用房产。',
       browseProperties: '浏览房产',
       viewListing: '查看房源',
@@ -430,6 +436,7 @@ const translations = {
   es: {
     nav: { home: 'Inicio', properties: 'Propiedades', agents: 'Agentes', blog: 'Blog', about: 'Nosotros', contact: 'Contacto', neighborhoods: 'Barrios', private: 'Colección Privada' },
     header: { searchPlaceholder: 'Buscar propiedades...', calculator: 'Calculadora', mapView: 'Vista de mapa', profile: 'Perfil', admin: 'Panel de administración', logout: 'Cerrar sesión', signIn: 'Iniciar sesión', signUp: 'Registrarse', menu: 'Menú' },
+    skipToContent: 'Saltar al contenido',
     hero: [
       { title: 'Donde la elegancia se encuentra con el confort', subtitle: 'Descubra una colección curada de las propiedades más excepcionales del mundo' },
       { title: 'Espacios de vida extraordinarios', subtitle: 'Residencias diseñadas meticulosamente para una clientela exigente' },
@@ -440,6 +447,8 @@ const translations = {
     home: {
       featuredTitle: 'Propiedades destacadas',
       featuredSub: 'Hogares seleccionados que definen el lujo y la comodidad',
+      recentlyViewed: 'Vistos recientemente',
+      recentlyViewedSub: 'Continúe donde lo dejó',
       emptyState: 'Aún no hay propiedades disponibles.',
       browseProperties: 'Ver propiedades',
       viewListing: 'Ver listado',

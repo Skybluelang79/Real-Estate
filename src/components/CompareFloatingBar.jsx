@@ -14,7 +14,7 @@ export default function CompareFloatingBar() {
         <div className="compare-thumbs">
           {compareList.map(p => (
             <div key={p.id} className="compare-thumb">
-              <img src={p.image || '/placeholder.jpg'} alt={p.title} />
+              <img src={p.image || '/placeholder.jpg'} alt={p.title} loading="lazy" />
               <button className="compare-remove" onClick={() => removeFromCompare(p.id)}>&times;</button>
             </div>
           ))}

@@ -12,6 +12,7 @@ import Sponsors from './components/Sponsors'
 import Advertisements from './components/Advertisements'
 import Testimonials from './components/Testimonials'
 import JustListed from './components/JustListed'
+import RecentlyViewed from './components/RecentlyViewed'
 import OpenHousesSection from './components/OpenHousesSection'
 import HomeTools from './components/HomeTools'
 import AgentSpotlight from './components/AgentSpotlight'
@@ -21,6 +22,7 @@ import NewsletterPopup from './components/NewsletterPopup'
 import SaveSearchPrompt from './components/SaveSearchPrompt'
 import CompareFloatingBar from './components/CompareFloatingBar'
 import BackToTop from './components/BackToTop'
+import QuickContact from './components/QuickContact'
 import Breadcrumbs from './components/Breadcrumbs'
 import ChatWidget from './components/ChatWidget'
 import Seo from './components/Seo'
@@ -90,6 +92,7 @@ function Home() {
       <SaveSearchPrompt />
       <StatsSection />
       <JustListed />
+      <RecentlyViewed />
       <section className="section featured-section">
         <div className="container">
           <div className="section-header">
@@ -379,14 +382,17 @@ function PropertiesPage() {
 
 function App() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   return (
     <div className="app">
+      <a href="#main-content" className="skip-link">{t('skipToContent')}</a>
       <BackToTop />
       <RouteSeo />
       <Header />
       <CompareFloatingBar />
       <ChatWidget user={user} />
-      <main className="main">
+      <QuickContact />
+      <main id="main-content" className="main">
         <Suspense fallback={<div className="page-loader"><div className="spinner" /></div>}>
           <Routes>
             <Route path="/" element={<Home />} />

@@ -27,7 +27,7 @@ export default function Blog() {
           <div className="blog-grid">
             {posts.map(post => (
               <article key={post.id} className="blog-card card">
-                {post.image && <img src={`${API_URL}${post.image}`} alt={post.title} className="blog-image" />}
+                {post.image && <img src={`${API_URL}${post.image}`} alt={post.title} className="blog-image" loading="lazy" />}
                 <div className="blog-body">
                   <h2><Link to={`/blog/${post.id}`}>{post.title}</Link></h2>
                   <p className="blog-meta">By {post.author || 'Admin'} &middot; {new Date(post.createdAt).toLocaleDateString()}</p>

@@ -74,6 +74,14 @@ export default function Footer() {
         </div>
         <div className="footer-bottom">
           <span>&copy; 2026 {t('footer.rights')}</span>
+          <div className="footer-trust-badges">
+            <span className="footer-badge">DRE #01987654</span>
+            <span className="footer-badge">MLS Member</span>
+            <span className="footer-badge footer-badge-eho">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+              Equal Housing Opportunity
+            </span>
+          </div>
         </div>
       </div>
     </footer>
