@@ -1,0 +1,66 @@
+name: Deploy Backend to Render
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'render.yaml'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      RENDER_OWNER_ID: ${{ secrets.RENDER_OWNER_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy or trigger Render service
+        if: env.RENDER_API_KEY != ''
+        run: |
+          set -euo pipefail
+          SERVICE_NAME="dream-homes-api"
+          API="https://api.render.com/v1"
+          AUTH="Authorization: Bearer $RENDER_API_KEY"
+          CT="Content-Type: application/json"
+
+          echo "Looking for existing service '$SERVICE_NAME'..."
+          SERVICES=$(curl -s -H "$AUTH" "$API/services")
+          ID=$(echo "$SERVICES" | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{const a=JSON.parse(d);const s=a.find(x=>x.name==='$SERVICE_NAME');console.log(s?s.id:'')}catch(e){console.error(e.message);process.exit(1)}})" || true)
+
+          if [ -z "$ID" ]; then
+            echo "Service not found. Creating from render.yaml blueprint..."
+            if [ -z "$RENDER_OWNER_ID" ]; then
+              echo "::error::RENDER_OWNER_ID secret is required to create the service. Add it (or pre-create the service in the Render dashboard) and re-run."
+              exit 1
+            fi
+            RES=$(curl -s -X POST -H "$AUTH" -H "$CT" \
+              --data-binary @render.yaml \
+              "$API/blueprint?name=$SERVICE_NAME&fromRepo=true&ownerId=$RENDER_OWNER_ID")
+            echo "$RES"
+            ID=$(echo "$RES" | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{const a=JSON.parse(d);console.log(a.serviceIds?.[0]||'')}catch(e){console.error(e.message);process.exit(1)}})" || true)
+            if [ -z "$ID" ]; then
+              echo "::error::Failed to create service via blueprint."
+              exit 1
+            fi
+            echo "Created service $ID"
+          else
+            echo "Found existing service $ID"
+          fi
+
+          echo "Triggering deploy..."
+          curl -s -X POST -H "$AUTH" -H "$CT" \
+            -d '{"clearCache":false}' \
+            "$API/services/$ID/deploys"
+          echo ""
+          echo "Deploy triggered for $SERVICE_NAME"
+
+      - name: Skip (no RENDER_API_KEY secret)
+        if: env.RENDER_API_KEY == ''
+        run: |
+          echo "RENDER_API_KEY secret is not set — skipping Render deploy."
+          echo "Add the secret in GitHub > Settings > Secrets and variables > Actions to enable auto-deploy."
