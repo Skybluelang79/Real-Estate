@@ -5677,3 +5677,165 @@ body.dark-mode .ad-inline-card {
     gap: 4px;
   }
 }
+
+/* ==================== TRUST & SOCIAL PROOF ==================== */
+.detail-social-proof {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 14px 0 6px;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #666);
+}
+
+.detail-watching {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.detail-watching-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2E9E5B;
+  box-shadow: 0 0 0 0 rgba(46, 158, 91, 0.5);
+  animation: watchingPulse 1.8s infinite;
+  flex: 0 0 auto;
+}
+
+@keyframes watchingPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(46, 158, 91, 0.45); }
+  50% { box-shadow: 0 0 0 6px rgba(46, 158, 91, 0); }
+}
+
+.detail-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #1A7F37;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* Agent avatar inside property detail sidebar */
+.property-agent-avatar {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--primary-gradient, linear-gradient(135deg, #C9A84C, #8C6A2E));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading, 'Playfair Display', serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* Reusable star rating line (agent cards, detail pages) */
+.agent-rating-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-muted, #888);
+  margin-top: 4px;
+}
+
+.agent-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: #C9A84C;
+}
+
+.agent-rating-num {
+  font-weight: 700;
+  color: var(--text, #1A1714);
+}
+
+.agent-rating-count {
+  font-size: 0.78rem;
+  color: var(--text-muted, #888);
+}
+
+/* Agent card + spotlight rating placement */
+.agent-card .agent-rating-line,
+.agent-spotlight-card .agent-rating-line {
+  justify-content: center;
+}
+
+/* Price drop alert card in property detail sidebar */
+.detail-price-alert {
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.08), rgba(201, 168, 76, 0.02));
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  border-radius: var(--radius-lg, 14px);
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.detail-price-alert-icon {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--primary-gradient, linear-gradient(135deg, #C9A84C, #8C6A2E));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(201, 168, 76, 0.35);
+}
+
+.detail-price-alert h3 {
+  font-family: var(--font-heading, 'Playfair Display', serif);
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.detail-price-alert-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-price-alert-form input {
+  flex: 1;
+  min-width: 160px;
+  padding: 10px 12px;
+  border: 1px solid var(--border, rgba(0,0,0,0.12));
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  background: var(--bg, #fff);
+  color: var(--text, #1A1714);
+}
+
+.detail-price-alert-form input:focus {
+  outline: none;
+  border-color: #C9A84C;
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.18);
+}
+
+.detail-price-alert-ok {
+  font-size: 0.9rem;
+  color: #1A7F37;
+  font-weight: 600;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .detail-social-proof {
+    gap: 10px;
+    font-size: 0.78rem;
+  }
+  .detail-price-alert {
+    flex-direction: column;
+  }
+}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import API_URL from '../config';
 import SafeImage from './SafeImage';
+import AgentRating from './AgentRating';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function AgentSpotlight() {
@@ -51,6 +52,7 @@ export default function AgentSpotlight() {
                   </div>
                   <h3>{agent.name}</h3>
                   <p className="agent-spotlight-title">{agent.title || 'Real Estate Advisor'}</p>
+                  <AgentRating id={agent.id} />
                   {agent.listingCount > 0 && (
                     <span className="agent-spotlight-listings">
                       {agent.listingCount} {agent.listingCount === 1 ? 'listing' : 'listings'}

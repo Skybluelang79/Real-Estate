@@ -19,6 +19,7 @@ import AgentSpotlight from './components/AgentSpotlight'
 import BlogPreview from './components/BlogPreview'
 import NeighborhoodPriceTrends from './components/NeighborhoodPriceTrends'
 import NewsletterPopup from './components/NewsletterPopup'
+import Reveal from './components/Reveal'
 import SaveSearchPrompt from './components/SaveSearchPrompt'
 import CompareFloatingBar from './components/CompareFloatingBar'
 import BackToTop from './components/BackToTop'
@@ -90,15 +91,17 @@ function Home() {
     <>
       <Hero properties={properties} />
       <SaveSearchPrompt />
-      <StatsSection />
-      <JustListed />
-      <RecentlyViewed />
+      <Reveal><StatsSection /></Reveal>
+      <Reveal><JustListed /></Reveal>
+      <Reveal><RecentlyViewed /></Reveal>
       <section className="section featured-section">
         <div className="container">
-          <div className="section-header">
-            <h2>{t('home.featuredTitle')}</h2>
-            <p>{t('home.featuredSub')}</p>
-          </div>
+          <Reveal>
+            <div className="section-header">
+              <h2>{t('home.featuredTitle')}</h2>
+              <p>{t('home.featuredSub')}</p>
+            </div>
+          </Reveal>
           {isLoading ? (
             <div className="property-grid">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -131,18 +134,18 @@ function Home() {
           )}
         </div>
       </section>
-      <ServicesSection />
-      <HomeTools />
-      <OpenHousesSection />
-      <NeighborhoodPriceTrends />
-      <NeighborhoodsPreview />
-      <AgentSpotlight />
+      <Reveal><ServicesSection /></Reveal>
+      <Reveal><HomeTools /></Reveal>
+      <Reveal><OpenHousesSection /></Reveal>
+      <Reveal><NeighborhoodPriceTrends /></Reveal>
+      <Reveal><NeighborhoodsPreview /></Reveal>
+      <Reveal><AgentSpotlight /></Reveal>
       <Suspense fallback={null}>
         <MiniMap />
       </Suspense>
-      <Testimonials />
-      <BlogPreview />
-      <CtaBanner />
+      <Reveal><Testimonials /></Reveal>
+      <Reveal><BlogPreview /></Reveal>
+      <Reveal><CtaBanner /></Reveal>
       <Advertisements />
       <Sponsors />
       <NewsletterPopup />

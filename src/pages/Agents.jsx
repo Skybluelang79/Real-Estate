@@ -2,6 +2,7 @@
 import { Link } from 'react-router';
 import API_URL from '../config';
 import SafeImage from '../components/SafeImage';
+import AgentRating from '../components/AgentRating';
 import Seo from '../components/Seo';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useLanguage } from '../context/LanguageContext';
@@ -46,6 +47,7 @@ export default function Agents() {
                 </div>
                 <h3>{agent.name}</h3>
                 <span className="agent-title">{agent.title || 'Real Estate Advisor'}</span>
+                <AgentRating id={agent.id} />
                 {agent.listingCount > 0 && (
                   <span className="agent-listings">{agent.listingCount} {agent.listingCount === 1 ? 'listing' : 'listings'}</span>
                 )}

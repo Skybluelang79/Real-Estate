@@ -58,31 +58,31 @@ async function initializeDatabase() {
     createdAt TEXT DEFAULT CURRENT_TIMESTAMP
   )`);
 
-  try { db.run("ALTER TABLE properties ADD COLUMN video TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN floorPlan TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN isPrivate INTEGER DEFAULT 0"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN country TEXT DEFAULT 'US'"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN lotSize REAL"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN hoa REAL"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN propertyTaxes REAL"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN garage INTEGER"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN stories INTEGER"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN cooling TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN heating TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN parking TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN roof TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN viewType TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN basement TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN status TEXT DEFAULT 'For Sale'"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN amenities TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN floorPlans TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN availability TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE properties ADD COLUMN retail TEXT"); } catch (e) { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN video TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN floorPlan TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN isPrivate INTEGER DEFAULT 0"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN country TEXT DEFAULT 'US'"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN lotSize REAL"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN hoa REAL"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN propertyTaxes REAL"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN garage INTEGER"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN stories INTEGER"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN cooling TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN heating TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN parking TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN roof TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN viewType TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN basement TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN status TEXT DEFAULT 'For Sale'"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN amenities TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN floorPlans TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN availability TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE properties ADD COLUMN retail TEXT"); } catch { /* already exists */ }
 
-  try { db.run("ALTER TABLE users ADD COLUMN passwordResetToken TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE users ADD COLUMN passwordResetExpires TEXT"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE users ADD COLUMN active INTEGER DEFAULT 1"); } catch (e) { /* already exists */ }
-  try { db.run("ALTER TABLE saved_searches ADD COLUMN lastAlertAt TEXT"); } catch (e) { /* already exists */ }
+  try { db.run("ALTER TABLE users ADD COLUMN passwordResetToken TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE users ADD COLUMN passwordResetExpires TEXT"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE users ADD COLUMN active INTEGER DEFAULT 1"); } catch { /* already exists */ }
+  try { db.run("ALTER TABLE saved_searches ADD COLUMN lastAlertAt TEXT"); } catch { /* already exists */ }
 
   db.run(`CREATE TABLE IF NOT EXISTS leads (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -133,7 +133,7 @@ async function initializeDatabase() {
     createdAt TEXT DEFAULT CURRENT_TIMESTAMP
   )`);
 
-  try { db.run("ALTER TABLE notifications ADD COLUMN userId INTEGER"); } catch (e) { /* already exists */ }
+  try { db.run("ALTER TABLE notifications ADD COLUMN userId INTEGER"); } catch { /* already exists */ }
 
   db.run(`CREATE TABLE IF NOT EXISTS offers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -6,6 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import Lightbox from './Lightbox';
 import SafeImage from './SafeImage';
 import API_URL from '../config';
+import { viewersFor } from '../utils/socialProof';
 
 export default function PropertyCard({ property }) {
   const { token } = useAuth();
@@ -57,6 +58,8 @@ export default function PropertyCard({ property }) {
   const propSize = property.size || property.sqft || '—';
   const tags = property.tags ? (Array.isArray(property.tags) ? property.tags : property.tags.split(',').filter(Boolean)) : [];
   const propId = property.id || property._id;
+  const viewers = viewersFor(propId);
+  const isFeatured = property.featured === 1 || property.featured === true;
 
   return (
     <>
@@ -88,9 +91,20 @@ export default function PropertyCard({ property }) {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               </Link>
             )}
+            <span className="card-watching">
+              <span className="card-watching-dot" />
+              {viewers} people viewing
+            </span>
           </div>
           <div className="property-card-body">
-            <div className="property-price">{formatPrice(property.price)}</div>
+            <div className="property-price">
+              {formatPrice(property.price)}
+              {isFeatured && (
+                <span className="verified-badge" title="Verified listing">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </span>
+              )}
+            </div>
             <h3 className="property-name">{propName}</h3>
             <div className="property-location">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -114,7 +128,15 @@ export default function PropertyCard({ property }) {
             <button
               className={`btn-ghost btn-sm`}
               style={{ width: '100%', marginTop: 4, fontSize: '0.8rem' }}
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); isInCompare(propId) ? removeFromCompare(propId) : addToCompare({ ...property, id: propId }); }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (isInCompare(propId)) {
+                  removeFromCompare(propId);
+                } else {
+                  addToCompare({ ...property, id: propId });
+                }
+              }}
             >
               {isInCompare(propId) ? t('card.removeCompare') : t('card.addCompare')}
             </button>

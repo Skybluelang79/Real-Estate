@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import API_URL from '../config';
 
-function AdCanvas({ ad, isActive }) {
+function AdCanvas({ ad: _ad, isActive }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {

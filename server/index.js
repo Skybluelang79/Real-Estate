@@ -143,17 +143,6 @@ function toNum(v, min, max) {
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : null;
 }
 
-function requireFields(req, res, fields) {
-  for (const f of fields) {
-    const v = req.body[f];
-    if (v === undefined || v === null || String(v).trim() === '') {
-      res.status(400).json({ error: `${f.charAt(0).toUpperCase() + f.slice(1)} is required` });
-      return false;
-    }
-  }
-  return true;
-}
-
 function notify(type, message, link, userId) {
   try {
     const db = getDbSync();
@@ -195,7 +184,7 @@ function authMiddleware(req, res, next) {
     if (result[0].values[0][4] === 0) return res.status(403).json({ error: 'Account disabled' });
     req.user = { id: result[0].values[0][0], name: result[0].values[0][1], email: result[0].values[0][2], isAdmin: result[0].values[0][3] === 1 };
     next();
-  } catch (err) {
+  } catch {
     res.status(401).json({ error: 'Invalid token' });
   }
 }
@@ -215,7 +204,7 @@ function optionalAuth(req, res, next) {
     if (result.length === 0 || result[0].values.length === 0) return next();
     if (result[0].values[0][4] === 0) return next();
     req.user = { id: result[0].values[0][0], name: result[0].values[0][1], email: result[0].values[0][2], isAdmin: result[0].values[0][3] === 1 };
-  } catch (err) {
+  } catch {
     /* invalid token: treat as anonymous */
   }
   next();
@@ -513,7 +502,7 @@ app.get('/api/properties/vip', authMiddleware, (req, res) => {
       obj.featured = obj.featured === 1;
       return obj;
     });
-    res.json({ tours });
+    res.json({ properties });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1094,7 +1083,7 @@ app.post('/api/leads', (req, res) => {
 
 app.post('/api/valuations', (req, res) => {
   try {
-    const { address, city, state, beds, baths, sqft, name, email, phone } = req.body;
+    const { address, city, state, beds, sqft, name, email, phone } = req.body;
     if (!city || !state) return res.status(400).json({ error: 'City and state are required' });
     const db = getDbSync();
 

@@ -10,10 +10,12 @@ import NeighborhoodInsights from '../components/NeighborhoodInsights';
 import PDFFlyer from '../components/PDFFlyer';
 import Advertisements from '../components/Advertisements';
 import Seo from '../components/Seo';
+import AgentRating from '../components/AgentRating';
 import API_URL from '../config';
 import usePageTitle from '../hooks/usePageTitle';
 import { usePropertyQuery, usePropertiesQuery } from '../api/properties';
 import { neighborhoodForCity } from '../data/neighborhoods';
+import { viewersFor } from '../utils/socialProof';
 
 function getYoutubeEmbedUrl(url) {
   if (!url) return '';
@@ -50,6 +52,9 @@ export default function PropertyDetail() {
   const galleryTimerRef = useRef(null);
 
   const [priceHistory, setPriceHistory] = useState([]);
+  const [priceAlertEmail, setPriceAlertEmail] = useState('');
+  const [priceAlertStatus, setPriceAlertStatus] = useState('');
+  const [priceAlertSent, setPriceAlertSent] = useState(false);
 
   const { data: propertyData, isLoading } = usePropertyQuery(id);
   const property = propertyData?.property || null;
@@ -263,6 +268,32 @@ export default function PropertyDetail() {
   const shareText = `Check out ${displayName} on Dream Homes`;
   const neighborhood = neighborhoodForCity(property?.city);
 
+  const submitPriceAlert = async (e) => {
+    e.preventDefault();
+    if (!priceAlertEmail.trim()) { setPriceAlertStatus('Please enter your email.'); return; }
+    try {
+      const res = await fetch(`${API_URL}/api/leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: priceAlertEmail.trim(),
+          email: priceAlertEmail.trim(),
+          type: 'buyer',
+          source: 'price-alert',
+          notes: `Price drop alert for ${displayName}`,
+        }),
+      });
+      if (res.ok) {
+        setPriceAlertSent(true);
+        setPriceAlertStatus('You are subscribed. We will email you if the price changes.');
+      } else {
+        setPriceAlertStatus('Could not subscribe. Please try again.');
+      }
+    } catch {
+      setPriceAlertStatus('Could not subscribe. Please try again.');
+    }
+  };
+
   const shareSocial = (platform) => {
     const urls = {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
@@ -323,14 +354,21 @@ export default function PropertyDetail() {
           url: shareUrl,
           description: property.description,
           image: property.image,
-          offers: { '@type': 'Offer', price: property.price, priceCurrency: 'USD' },
+          numberOfRooms: property.beds,
+          numberOfBathroomsTotal: property.baths,
+          floorSize: property.sqft ? { '@type': 'QuantitativeValue', value: property.sqft, unitCode: 'FTK' } : undefined,
+          offers: { '@type': 'Offer', price: property.price, priceCurrency: 'USD', availability: property.status === 'For Sale' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' },
           address: {
             '@type': 'PostalAddress',
             streetAddress: property.address,
             addressLocality: property.city,
             addressRegion: property.state,
             postalCode: property.zipcode || property.zip,
+            addressCountry: property.country || 'US',
           },
+          geo: property.latitude && property.longitude
+            ? { '@type': 'GeoCoordinates', latitude: property.latitude, longitude: property.longitude }
+            : undefined,
         }}
       />
       <div className="container">
@@ -380,6 +418,18 @@ export default function PropertyDetail() {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill={favorited ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
               </button>
               {favoritedMsg && <span className="detail-fav-msg">{favoritedMsg}</span>}
+            </div>
+            <div className="detail-social-proof">
+              <span className="detail-watching">
+                <span className="detail-watching-dot" />
+                {viewersFor(id)} people viewing this home right now
+              </span>
+              {property.featured === 1 && (
+                <span className="detail-verified">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Verified Listing
+                </span>
+              )}
             </div>
             <h1 className="detail-title">{displayName}</h1>
             <div className="detail-location">
@@ -490,7 +540,11 @@ export default function PropertyDetail() {
               <div className="detail-agent-card">
                 <div className="detail-agent-header">
                   <div className="property-agent-avatar">{agentName.charAt(0)}</div>
-                  <div><strong>{agentName}</strong>{agentPhone && <span>{agentPhone}</span>}{agentEmail && <span>{agentEmail}</span>}</div>
+                  <div>
+                    <strong>{agentName}</strong>
+                    <AgentRating id={agentName} name={agentName} />
+                    {agentPhone && <span>{agentPhone}</span>}{agentEmail && <span>{agentEmail}</span>}
+                  </div>
                 </div>
               </div>
             )}
@@ -600,6 +654,30 @@ export default function PropertyDetail() {
                 <button type="submit" className="btn-primary">Send Inquiry</button>
                 {inquiryStatus && <p className="form-status-msg">{inquiryStatus}</p>}
               </form>
+            </div>
+
+            <div className="detail-price-alert">
+              <div className="detail-price-alert-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M12 2v2"/></svg>
+              </div>
+              <div>
+                <h3>Never Miss a Price Change</h3>
+                {priceAlertSent ? (
+                  <p className="detail-price-alert-ok">{priceAlertStatus}</p>
+                ) : (
+                  <form onSubmit={submitPriceAlert} className="detail-price-alert-form">
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      value={priceAlertEmail}
+                      onChange={(e) => setPriceAlertEmail(e.target.value)}
+                      required
+                    />
+                    <button type="submit" className="btn-primary btn-sm">Get Alerts</button>
+                  </form>
+                )}
+                {priceAlertStatus && !priceAlertSent && <p className="form-status-msg">{priceAlertStatus}</p>}
+              </div>
             </div>
           </div>
         </div>

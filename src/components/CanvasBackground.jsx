@@ -11,8 +11,6 @@ export default function CanvasBackground({ className }) {
     let particles = [];
     let sparkles = [];
     let goldDust = [];
-    let mouseX = -1000;
-    let mouseY = -1000;
     let scrollSpeed = 0;
     let lastScrollY = 0;
 
@@ -34,11 +32,6 @@ export default function CanvasBackground({ className }) {
       }
       return () => window.removeEventListener('resize', resize);
     }
-
-    window.addEventListener('mousemove', (e) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-    });
 
     window.addEventListener('scroll', () => {
       const dy = Math.abs(window.scrollY - lastScrollY);

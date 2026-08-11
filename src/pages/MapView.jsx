@@ -5,7 +5,6 @@ import Cluster from 'react-leaflet-cluster';
 import { keepPreviousData } from '@tanstack/react-query';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import API_URL from '../config';
 import SafeImage from '../components/SafeImage';
 import usePageTitle from '../hooks/usePageTitle';
 import useDebounce from '../hooks/useDebounce';
@@ -17,7 +16,6 @@ const defaultCenter = [34.0522, -118.2437];
 
 function createIcon(active, price, sponsored) {
   const size = active ? 52 : 44;
-  const color = sponsored ? '#E85D3A' : (active ? '#C9A84C' : '#1A1714');
   const bg = sponsored ? '#E85D3A' : (active ? '#C9A84C' : '#C9A84C');
   const innerFill = active ? '#FAFAF8' : '#1A1714';
   return L.divIcon({
@@ -441,7 +439,7 @@ export default function MapView() {
             </div>
           </div>
           <div className="map-drawer-list">
-            {listProperties.map((p, i) => {
+            {listProperties.map((p) => {
               const pid = p.id || p._id;
               const isSelected = selectedId === pid;
               const dist = userLocation && p.latitude && p.longitude

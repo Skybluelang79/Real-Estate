@@ -4,6 +4,7 @@ import PropertyCard from '../components/PropertyCard';
 import Seo from '../components/Seo';
 import Breadcrumbs from '../components/Breadcrumbs';
 import SafeImage from '../components/SafeImage';
+import AgentRating from '../components/AgentRating';
 import API_URL from '../config';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -85,6 +86,7 @@ export default function AgentDetail() {
           <div className="agent-detail-info">
             <span className="agent-detail-title">{agent.title || 'Real Estate Advisor'}</span>
             <h1>{agent.name}</h1>
+            <AgentRating id={agent.id} size={17} />
             <div className="agent-detail-stats">
               <div><strong>{agent.experience || '—'}</strong><span>Experience</span></div>
               <div><strong>{agent.sales || '—'}</strong><span>Track Record</span></div>
