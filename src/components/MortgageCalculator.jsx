@@ -12,6 +12,8 @@ export default function MortgageCalculator({ isOpen, onClose }) {
   const [result, setResult] = useState(null);
   const [pqForm, setPqForm] = useState({ name: '', email: '', phone: '' });
   const [pqStatus, setPqStatus] = useState('');
+  const [pqSubmitting, setPqSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const handleEscape = (e) => {
@@ -28,16 +30,43 @@ export default function MortgageCalculator({ isOpen, onClose }) {
   }, [isOpen, onClose]);
 
   const calculate = () => {
+    setError('');
+    if (!(homePrice > 0)) {
+      setError('Please enter a home price greater than $0.');
+      setResult(null);
+      return;
+    }
+    if (!(downPayment >= 0) || downPayment >= homePrice) {
+      setError('Down payment must be between $0 and the home price.');
+      setResult(null);
+      return;
+    }
+    if (!(interestRate > 0) || interestRate > 20) {
+      setError('Interest rate must be between 0% and 20%.');
+      setResult(null);
+      return;
+    }
+    if (!(loanTerm > 0)) {
+      setError('Loan term must be greater than 0.');
+      setResult(null);
+      return;
+    }
     setResult(calculateMortgage({ homePrice, downPayment, interestRate, loanTerm }));
   };
 
   const submitPrequal = async (e) => {
     e.preventDefault();
     setPqStatus('');
+    if (pqSubmitting) return;
     if (!pqForm.name || !pqForm.email) {
       setPqStatus(t('prequal.error'));
       return;
     }
+    if (!(homePrice > 0)) {
+      setPqStatus('Please calculate a valid mortgage first.');
+      return;
+    }
+    setPqSubmitting(true);
     try {
       const res = await fetch(`${API_URL}/api/pre-qualifications`, {
         method: 'POST',
@@ -61,6 +90,8 @@ export default function MortgageCalculator({ isOpen, onClose }) {
       }
     } catch {
       setPqStatus(t('prequal.error'));
+    } finally {
+      setPqSubmitting(false);
     }
   };
 
@@ -112,6 +143,7 @@ export default function MortgageCalculator({ isOpen, onClose }) {
             Calculate
           </button>
         </div>
+        {error && <p className="mortgage-error" style={{ color: '#b00020', marginTop: 12 }}>{error}</p>}
         {result && (
           <div className="mortgage-results">
             <div className="mortgage-result-item">
@@ -138,7 +170,7 @@ export default function MortgageCalculator({ isOpen, onClose }) {
               <input type="email" placeholder={t('prequal.email')} value={pqForm.email} onChange={(e) => setPqForm({ ...pqForm, email: e.target.value })} />
             </div>
             <input type="tel" placeholder={t('prequal.phone')} value={pqForm.phone} onChange={(e) => setPqForm({ ...pqForm, phone: e.target.value })} />
-            <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>{t('prequal.submit')}</button>
+            <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={pqSubmitting}>{pqSubmitting ? 'Submitting…' : t('prequal.submit')}</button>
             {pqStatus && <p className="form-status-msg">{pqStatus}</p>}
           </form>
         </div>

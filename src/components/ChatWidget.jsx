@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import API_URL from '../config';
 
@@ -7,58 +7,85 @@ export default function ChatWidget({ user }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [connected, setConnected] = useState(false);
+  const [authError, setAuthError] = useState(false);
   const socketRef = useRef(null);
   const bottomRef = useRef(null);
 
+  const loadHistory = useCallback(async () => {
+    const token = localStorage.getItem('dreamhomes_token');
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/api/chat/messages`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.messages) setMessages(data.messages);
+    } catch {
+      // history is optional
+    }
+  }, []);
+
   useEffect(() => {
-    const s = io(API_URL, { transports: ['websocket', 'polling'] });
+    const s = io(API_URL, {
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
     socketRef.current = s;
 
     s.on('connect', () => {
       setConnected(true);
-      if (user) s.emit('join', { userId: user.id, name: user.name || user.email });
+      setAuthError(false);
+      loadHistory();
+      const token = localStorage.getItem('dreamhomes_token');
+      if (user && token) s.emit('join', { token });
     });
 
     s.on('new-message', (msg) => {
-      setMessages(prev => [...prev, msg]);
+      setMessages(prev => {
+        if (prev.some(m => m.id === msg.id)) return prev;
+        return [...prev, msg];
+      });
     });
 
+    s.on('auth-error', () => setAuthError(true));
+    s.on('connect_error', () => setConnected(false));
     s.on('disconnect', () => setConnected(false));
 
     return () => s.disconnect();
-  }, [user]);
+  }, [user, loadHistory]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (open) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, open]);
 
   const send = (e) => {
     e.preventDefault();
-    if (!input.trim() || !socketRef.current) return;
-    socketRef.current.emit('message', {
-      userId: user?.id || 'guest',
-      userName: user?.name || user?.email || 'Guest',
-      message: input.trim(),
-    });
+    if (!input.trim() || !socketRef.current || !connected) return;
+    socketRef.current.emit('message', { message: input.trim() });
     setInput('');
   };
 
   const name = user?.name || user?.email || 'Guest';
+  const isOnline = connected && !authError;
 
   return (
     <>
-      <button className="chat-toggle" onClick={() => setOpen(o => !o)}>
+      <button className="chat-toggle" onClick={() => setOpen(o => !o)} aria-label="Chat">
         {open ? '✕' : '💬'}
       </button>
       {open && (
         <div className="chat-widget">
           <div className="chat-header">
             <strong>Live Chat</strong>
-            <span className={`chat-status ${connected ? 'online' : 'offline'}`}>
-              {connected ? 'Online' : 'Connecting...'}
+            <span className={`chat-status ${isOnline ? 'online' : 'offline'}`}>
+              {isOnline ? 'Online' : authError ? 'Sign in to chat' : connected ? 'Connecting...' : 'Offline — retrying'}
             </span>
           </div>
           <div className="chat-messages">
+            {messages.length === 0 && (
+              <p className="chat-empty">No messages yet. Say hello!</p>
+            )}
             {messages.map((m, i) => (
               <div key={m.id || i} className={`chat-msg ${m.userName === name ? 'own' : ''}`}>
                 <small>{m.userName}</small>
@@ -72,9 +99,9 @@ export default function ChatWidget({ user }) {
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="Type a message..."
-              disabled={!connected}
+              disabled={!isOnline}
             />
-            <button type="submit" disabled={!connected || !input.trim()}>Send</button>
+            <button type="submit" disabled={!isOnline || !input.trim()}>Send</button>
           </form>
         </div>
       )}

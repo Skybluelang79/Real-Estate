@@ -39,6 +39,8 @@ export default function NewsletterPopup() {
       if (res.ok) {
         setStatus('ok');
         setEmail('');
+        try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* ignore */ }
+        setTimeout(() => setVisible(false), 1800);
       } else {
         setStatus('error');
       }

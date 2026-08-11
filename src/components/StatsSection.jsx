@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import neighborhoods from '../data/neighborhoods';
+import API_URL from '../config';
 
 const DEFAULTS = {
   properties: 250,
@@ -47,8 +48,8 @@ export default function StatsSection() {
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      fetch('/api/properties?limit=1').then((r) => r.json()).catch(() => null),
-      fetch('/api/agents').then((r) => r.json()).catch(() => null),
+      fetch(`${API_URL}/api/properties?limit=1`).then((r) => r.json()).catch(() => null),
+      fetch(`${API_URL}/api/agents`).then((r) => r.json()).catch(() => null),
     ]).then(([properties, agents]) => {
       if (cancelled) return;
       setStats({

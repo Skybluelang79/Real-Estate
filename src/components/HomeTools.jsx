@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useLanguage } from '../context/LanguageContext';
+import API_URL from '../config';
 
 function currency(num) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(num || 0);
@@ -15,8 +16,11 @@ export default function HomeTools() {
 
   const [valAddress, setValAddress] = useState('');
   const [valCity, setValCity] = useState('');
+  const [valState, setValState] = useState('CA');
   const [valBeds, setValBeds] = useState(3);
   const [valResult, setValResult] = useState(null);
+  const [valLoading, setValLoading] = useState(false);
+  const [valError, setValError] = useState('');
 
   const principal = Math.max(price - down, 0);
   const monthlyRate = rate / 100 / 12;
@@ -28,14 +32,24 @@ export default function HomeTools() {
   const totalPayment = monthly * months;
   const totalInterest = totalPayment - principal;
 
-  const runValuation = (e) => {
+  const runValuation = async (e) => {
     e.preventDefault();
-    const base = 180 + valBeds * 42;
-    const noise = Math.round((Math.random() - 0.5) * 24);
-    const perSqft = 625 + Math.random() * 110;
-    const sqft = base * 100 + Math.round(Math.random() * 40) * 10;
-    const estimate = Math.round((sqft * perSqft * (1 + noise / 100)) / 1000) * 1000;
-    setValResult({ sqft, estimate });
+    setValLoading(true);
+    setValError('');
+    try {
+      const res = await fetch(`${API_URL}/api/valuations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: valAddress, city: valCity, state: valState, beds: valBeds }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not generate estimate');
+      setValResult(data);
+    } catch (err) {
+      setValError(err.message);
+    } finally {
+      setValLoading(false);
+    }
   };
 
   return (
@@ -102,18 +116,24 @@ export default function HomeTools() {
                 <label>{t('home.tools.city')}
                   <input type="text" value={valCity} onChange={(e) => setValCity(e.target.value)} required />
                 </label>
+                <label>{t('home.tools.state')}
+                  <input type="text" value={valState} onChange={(e) => setValState(e.target.value.toUpperCase())} maxLength="2" required />
+                </label>
+              </div>
+              <div className="tool-form-row">
                 <label>{t('home.tools.beds')}
                   <select value={valBeds} onChange={(e) => setValBeds(Number(e.target.value))}>
                     {[1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}+</option>)}
                   </select>
                 </label>
               </div>
-              <button type="submit" className="btn-primary tool-cta">{t('home.tools.calculate')}</button>
+              <button type="submit" className="btn-primary tool-cta" disabled={valLoading}>{valLoading ? t('home.tools.calculating') || 'Calculating…' : t('home.tools.calculate')}</button>
             </form>
+            {valError && <p className="tool-error" style={{ color: '#b00020', marginTop: 10 }}>{valError}</p>}
             {valResult && (
               <div className="tool-results valuation-result">
                 <div><span>{t('home.tools.estimate')}</span><strong>{currency(valResult.estimate)}</strong></div>
-                <div><span>≈ {valResult.sqft.toLocaleString()} sqft</span><strong>{currency(Math.round(valResult.estimate / valResult.sqft))}/sqft</strong></div>
+                <div><span>≈ {valResult.sqft.toLocaleString()} sqft</span><strong>{currency(valResult.perSqft)}/sqft</strong></div>
               </div>
             )}
             <p className="tool-disclaimer">{t('home.tools.estimateResult')}</p>

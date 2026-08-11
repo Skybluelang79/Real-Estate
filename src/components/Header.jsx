@@ -54,7 +54,7 @@ export default function Header() {
   }, []);
 
   const loadNotifications = () => {
-    if (!token) return;
+    if (!token || !user?.isAdmin) return;
     const headers = { Authorization: `Bearer ${token}` };
     fetch(`${API_URL}/api/notifications/unread-count`, { headers })
       .then(r => r.json()).then(d => setUnread(d.count || 0)).catch(() => {});

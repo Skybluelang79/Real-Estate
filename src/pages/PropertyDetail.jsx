@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useCallback, useContext } from 'react';
+﻿import { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
 import { useParams, Link } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { CompareContext } from '../context/CompareContext';
@@ -49,6 +49,8 @@ export default function PropertyDetail() {
   const videoRef = useRef(null);
   const galleryTimerRef = useRef(null);
 
+  const [priceHistory, setPriceHistory] = useState([]);
+
   const { data: propertyData, isLoading } = usePropertyQuery(id);
   const property = propertyData?.property || null;
 
@@ -56,10 +58,31 @@ export default function PropertyDetail() {
   const [favorited, setFavorited] = useState(false);
   const [favoritedMsg, setFavoritedMsg] = useState('');
 
+  useEffect(() => {
+    if (!property) return;
+    let cancelled = false;
+    fetch(`${API_URL}/api/properties/${property.id}/history`)
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled) setPriceHistory(d.history || []); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [property]);
+
   const { data: allProps } = usePropertiesQuery({ limit: 100 });
-  const similar = (allProps?.properties || [])
-    .filter((p) => String(p.id || p._id) !== String(id))
-    .slice(0, 3);
+  const similar = useMemo(() => {
+    const list = allProps?.properties || [];
+    if (!property) return [];
+    const others = list.filter((p) => String(p.id || p._id) !== String(id));
+    const scored = others.map((p) => {
+      let score = 0;
+      if (p.city && property.city && String(p.city).toLowerCase() === String(property.city).toLowerCase()) score += 2;
+      if (p.type && property.type && String(p.type).toLowerCase() === String(property.type).toLowerCase()) score += 1;
+      return { p, score };
+    });
+    const matched = scored.filter((x) => x.score > 0).sort((a, b) => b.score - a.score).map((x) => x.p);
+    const chosen = matched.length >= 1 ? matched : others;
+    return chosen.slice(0, 3);
+  }, [allProps, property, id]);
 
   useEffect(() => {
     if (!property) return;
@@ -584,6 +607,21 @@ export default function PropertyDetail() {
         <NeighborhoodInsights property={property} />
 
         <Advertisements variant="inline" />
+
+        {priceHistory.length > 0 && (
+          <div className="detail-price-history">
+            <h2>Price History</h2>
+            <div className="price-history-list">
+              {priceHistory.slice().reverse().map((h, i) => (
+                <div key={h.id || i} className="price-history-item">
+                  <span className="price-history-date">{h.date}</span>
+                  <span className="price-history-price">${Number(h.price).toLocaleString()}</span>
+                  <span className="price-history-note">{h.note || ''}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {similar.length > 0 && (
           <div className="detail-similar">

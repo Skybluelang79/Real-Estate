@@ -28,6 +28,14 @@ export default function Hero({ properties = [] }) {
   const [paused, setPaused] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const intervalRef = useRef(null);
+
+  const formatPrice = (price) => {
+    const num = parseInt(String(price).replace(/[$,]/g, ''), 10);
+    if (num >= 1000000) return `$${(num / 1000000).toFixed(2)}M`;
+    if (num >= 1000) return `$${(num / 1000).toFixed(0)}K`;
+    return `$${(num || 0).toLocaleString()}`;
+  };
+
   const brandSlides = t('hero', slides);
   const heroSlides = Array.isArray(properties) && properties.length > 0
     ? properties.map((p) => ({
@@ -38,13 +46,6 @@ export default function Hero({ properties = [] }) {
         price: p.price,
       }))
     : brandSlides.map((s) => ({ ...s, link: '/properties' }));
-
-  const formatPrice = (price) => {
-    const num = parseInt(String(price).replace(/[$,]/g, ''), 10);
-    if (num >= 1000000) return `$${(num / 1000000).toFixed(2)}M`;
-    if (num >= 1000) return `$${(num / 1000).toFixed(0)}K`;
-    return `$${(num || 0).toLocaleString()}`;
-  };
 
   const startInterval = useCallback(() => {
     intervalRef.current = setInterval(() => {

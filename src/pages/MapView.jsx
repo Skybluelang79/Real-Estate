@@ -146,6 +146,7 @@ export default function MapView() {
 
   const [userLocation, setUserLocation] = useState(null);
   const [sortByDistance, setSortByDistance] = useState(false);
+  const [filterRadius, setFilterRadius] = useState('');
   const [layer, setLayer] = useState('street');
   const [sidebarIndex, setSidebarIndex] = useState(-1);
   const [hoveredId, setHoveredId] = useState(null);
@@ -187,15 +188,21 @@ export default function MapView() {
   );
 
   const visibleProperties = useMemo(() => {
-    if (sortByDistance && userLocation && validProperties.length > 0) {
+    if (userLocation && validProperties.length > 0) {
       const [ulat, ulng] = userLocation;
-      return [...validProperties].sort((a, b) =>
-        haversineDistance(ulat, ulng, parseFloat(a.latitude), parseFloat(a.longitude)) -
-        haversineDistance(ulat, ulng, parseFloat(b.latitude), parseFloat(b.longitude))
-      );
+      const withDist = validProperties.map(p => ({
+        ...p,
+        _dist: haversineDistance(ulat, ulng, parseFloat(p.latitude), parseFloat(p.longitude)),
+      }));
+      const radiusMiles = parseFloat(filterRadius);
+      const filtered = radiusMiles > 0 ? withDist.filter(p => p._dist <= radiusMiles) : withDist;
+      if (sortByDistance) {
+        return filtered.sort((a, b) => a._dist - b._dist);
+      }
+      return filtered;
     }
     return validProperties;
-  }, [validProperties, sortByDistance, userLocation]);
+  }, [validProperties, sortByDistance, userLocation, filterRadius]);
 
   const selectProperty = useCallback((pid) => {
     setSelectedId(pid);
@@ -208,10 +215,11 @@ export default function MapView() {
   const clearFilters = () => {
     setSearchText(''); setFilterType(''); setFilterBeds('');
     setFilterMinPrice(''); setFilterMaxPrice(''); setFilterAmenities(''); setFilterAvailability('');
+    setFilterRadius('');
   };
 
-  const hasFilters = searchText || filterType || filterBeds || filterMinPrice || filterMaxPrice || filterAmenities || filterAvailability;
-  const filterCount = [searchText, filterType, filterBeds, filterMinPrice, filterMaxPrice, filterAmenities, filterAvailability].filter(Boolean).length;
+  const hasFilters = searchText || filterType || filterBeds || filterMinPrice || filterMaxPrice || filterAmenities || filterAvailability || filterRadius;
+  const filterCount = [searchText, filterType, filterBeds, filterMinPrice, filterMaxPrice, filterAmenities, filterAvailability, filterRadius].filter(Boolean).length;
 
   const tileUrl = layer === 'street'
     ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
@@ -298,6 +306,20 @@ export default function MapView() {
             <option value="Lease to Own">Lease to Own</option>
             <option value="Sold">Sold</option>
             <option value="Pending">Pending</option>
+          </select>
+          <select
+            value={filterRadius}
+            onChange={e => setFilterRadius(e.target.value)}
+            disabled={!userLocation}
+            title={userLocation ? 'Show homes within this radius of your location' : 'Enable location access to search by radius'}
+            className="map-radius-select"
+          >
+            <option value="">Any Distance</option>
+            <option value="5">Within 5 mi</option>
+            <option value="10">Within 10 mi</option>
+            <option value="15">Within 15 mi</option>
+            <option value="25">Within 25 mi</option>
+            <option value="50">Within 50 mi</option>
           </select>
           <input type="number" placeholder="Min $" value={filterMinPrice} onChange={e => setFilterMinPrice(e.target.value)} className="map-price-in" />
           <input type="number" placeholder="Max $" value={filterMaxPrice} onChange={e => setFilterMaxPrice(e.target.value)} className="map-price-in" />

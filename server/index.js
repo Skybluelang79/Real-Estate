@@ -40,6 +40,17 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`);
   },
 });
+const csvUpload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const isCsv = file.mimetype === 'text/csv' || file.mimetype === 'application/csv' || /\.csv$/i.test(file.originalname);
+    if (!isCsv) {
+      return cb(new Error('Only CSV files are allowed'));
+    }
+    cb(null, true);
+  },
+});
 const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 },
@@ -143,12 +154,17 @@ function requireFields(req, res, fields) {
   return true;
 }
 
-function notify(type, message, link) {
+function notify(type, message, link, userId) {
   try {
     const db = getDbSync();
-    db.run("INSERT INTO notifications (type, message, link) VALUES (?, ?, ?)", [type, message, link || null]);
+    db.run("INSERT INTO notifications (userId, type, message, link) VALUES (?, ?, ?, ?)", [userId || null, type, message, link || null]);
     saveDb();
-    io.emit('notification', { type, message, link, createdAt: new Date().toISOString() });
+    const payload = { type, message, link, createdAt: new Date().toISOString() };
+    if (userId) {
+      io.to(`user:${userId}`).emit('notification', payload);
+    } else {
+      io.to('admins').emit('notification', payload);
+    }
   } catch (err) {
     console.log('Failed to create notification:', err.message);
   }
@@ -497,7 +513,21 @@ app.get('/api/properties/vip', authMiddleware, (req, res) => {
       obj.featured = obj.featured === 1;
       return obj;
     });
-    res.json({ properties });
+    res.json({ tours });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/tours/:id', authMiddleware, adminMiddleware, (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowed = ['pending', 'scheduled', 'completed', 'cancelled'];
+    if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    const db = getDbSync();
+    db.run("UPDATE tours SET status = ? WHERE id = ?", [status, parseInt(req.params.id)]);
+    saveDb();
+    res.json({ message: 'Tour status updated' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -543,6 +573,18 @@ app.get('/api/properties/:id', optionalAuth, (req, res) => {
     return res.status(404).json({ error: 'Property not found' });
   }
     res.json({ property });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/properties/:id/history', (req, res) => {
+  try {
+    const db = getDbSync();
+    const result = db.exec("SELECT id, price, date, note FROM price_history WHERE propertyId = ? ORDER BY date ASC", [parseInt(req.params.id)]);
+    if (result.length === 0) return res.json({ history: [] });
+    const history = result[0].values.map(r => ({ id: r[0], price: r[1], date: r[2], note: r[3] }));
+    res.json({ history });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -604,6 +646,13 @@ app.delete('/api/properties/:id', authMiddleware, adminMiddleware, (req, res) =>
       try { fpArr = floorPlans ? JSON.parse(floorPlans) : []; } catch { /* ignore */ }
       removeUploadedFiles([image, floorPlan, ...(Array.isArray(imgArr) ? imgArr : []), ...(Array.isArray(fpArr) ? fpArr : [])]);
     }
+    db.run("DELETE FROM offers WHERE propertyId = ?", [parseInt(req.params.id)]);
+    db.run("DELETE FROM favorites WHERE propertyId = ?", [parseInt(req.params.id)]);
+    db.run("DELETE FROM tours WHERE propertyId = ?", [parseInt(req.params.id)]);
+    db.run("DELETE FROM contacts WHERE propertyId = ?", [parseInt(req.params.id)]);
+    db.run("DELETE FROM inquiries WHERE propertyId = ?", [parseInt(req.params.id)]);
+    db.run("DELETE FROM page_views WHERE propertyId = ?", [parseInt(req.params.id)]);
+    db.run("DELETE FROM open_houses WHERE propertyId = ?", [parseInt(req.params.id)]);
     db.run("DELETE FROM properties WHERE id = ?", [parseInt(req.params.id)]);
     saveDb();
     res.json({ message: 'Property deleted' });
@@ -650,6 +699,20 @@ app.get('/api/contacts', authMiddleware, adminMiddleware, (req, res) => {
   }
 });
 
+app.put('/api/contacts/:id', authMiddleware, adminMiddleware, (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowed = ['new', 'contacted', 'followed-up', 'closed'];
+    if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    const db = getDbSync();
+    db.run("UPDATE contacts SET status = ? WHERE id = ?", [status, parseInt(req.params.id)]);
+    saveDb();
+    res.json({ message: 'Contact status updated' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/tours', authMiddleware, adminMiddleware, (req, res) => {
   try {
     const db = getDbSync();
@@ -686,7 +749,7 @@ app.get('/api/tours/mine', authMiddleware, (req, res) => {
 });
 
 // ===== OFFERS =====
-app.post('/api/properties/:id/offers', async (req, res) => {
+app.post('/api/properties/:id/offers', optionalAuth, async (req, res) => {
   try {
     const { name, email, phone, amount, message } = req.body;
     const propertyId = parseInt(req.params.id);
@@ -980,6 +1043,20 @@ app.get('/api/pre-qualifications', authMiddleware, adminMiddleware, (req, res) =
   }
 });
 
+app.put('/api/pre-qualifications/:id', authMiddleware, adminMiddleware, (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowed = ['new', 'contacted', 'qualified', 'disqualified'];
+    if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    const db = getDbSync();
+    db.run("UPDATE pre_qualifications SET status = ? WHERE id = ?", [status, parseInt(req.params.id)]);
+    saveDb();
+    res.json({ message: 'Pre-qualification status updated' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ===== LEADS (CRM PIPELINE) =====
 app.get('/api/leads', authMiddleware, adminMiddleware, (req, res) => {
   try {
@@ -1010,6 +1087,75 @@ app.post('/api/leads', (req, res) => {
       [name.trim(), email.trim().toLowerCase(), phone || null, type || 'buyer', source || 'manual', notes || null]);
     saveDb();
     res.status(201).json({ message: 'Lead created' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/valuations', (req, res) => {
+  try {
+    const { address, city, state, beds, baths, sqft, name, email, phone } = req.body;
+    if (!city || !state) return res.status(400).json({ error: 'City and state are required' });
+    const db = getDbSync();
+
+    const estimateSqftFromBeds = (b) => {
+      const table = { 1: 750, 2: 1100, 3: 1700, 4: 2300, 5: 3000, 6: 3800 };
+      const bedsNum = parseInt(b);
+      return table[bedsNum] || 1700;
+    };
+    const providedSqft = parseFloat(sqft);
+    const estimateSqft = providedSqft > 0 ? providedSqft : estimateSqftFromBeds(beds);
+
+    const collectPerSqft = (whereSql, params) => {
+      const rows = db.exec(`
+        SELECT price, sqft FROM properties
+        WHERE price > 0 AND sqft > 0 ${whereSql}
+        LIMIT 250`, params);
+      const out = [];
+      if (rows.length > 0 && rows[0].values.length > 0) {
+        for (const r of rows[0].values) out.push(r[0] / r[1]);
+      }
+      return out;
+    };
+
+    let perSqftList = collectPerSqft("AND LOWER(city) = LOWER(?) AND LOWER(state) = LOWER(?)", [city, state]);
+    let scope = 'city';
+    if (perSqftList.length < 3) {
+      perSqftList = collectPerSqft("AND LOWER(state) = LOWER(?)", [state]);
+      scope = 'state';
+    }
+    if (perSqftList.length < 3) {
+      perSqftList = collectPerSqft("", []);
+      scope = 'national';
+    }
+
+    const sorted = [...perSqftList].sort((a, b) => a - b);
+    const medianPerSqft = sorted.length > 0 ? sorted[Math.floor(sorted.length / 2)] : 520;
+
+    const estimate = Math.max(10000, Math.round(estimateSqft * medianPerSqft / 1000) * 1000);
+    const rangeLow = Math.round(estimate * 0.92 / 1000) * 1000;
+    const rangeHigh = Math.round(estimate * 1.08 / 1000) * 1000;
+
+    if (name && email && phone) {
+      if (validName(name) && validEmail(email) && validPhone(phone)) {
+        const notes = `Valuation request for ${address || 'unknown address'}, ${city}, ${state} — estimated $${estimate.toLocaleString()}`;
+        db.run("INSERT INTO leads (name, email, phone, type, status, source, notes) VALUES (?, ?, ?, 'seller', 'new', 'valuation', ?)",
+          [name.trim(), email.trim().toLowerCase(), phone, notes]);
+        notify('valuation', `Valuation request from ${name.trim()} for ${city}, ${state}`, '/admin');
+      }
+    }
+    saveDb();
+
+    res.json({
+      estimate,
+      rangeLow,
+      rangeHigh,
+      perSqft: Math.round(medianPerSqft),
+      comparables: sorted.length,
+      scope,
+      sqft: estimateSqft,
+      message: 'Valuation estimate generated from comparable listings',
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1168,7 +1314,24 @@ app.get('/api/open-houses/:id/rsvps', authMiddleware, adminMiddleware, (req, res
 app.get('/api/notifications', authMiddleware, adminMiddleware, (req, res) => {
   try {
     const db = getDbSync();
-    const result = db.exec("SELECT * FROM notifications ORDER BY createdAt DESC LIMIT 50");
+    const result = db.exec("SELECT * FROM notifications WHERE userId IS NULL ORDER BY createdAt DESC LIMIT 50");
+    if (result.length === 0) return res.json({ notifications: [] });
+    const cols = result[0].columns;
+    const notifications = result[0].values.map(row => {
+      const obj = {};
+      cols.forEach((col, i) => { obj[col] = row[i]; });
+      return obj;
+    });
+    res.json({ notifications });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/notifications/mine', authMiddleware, (req, res) => {
+  try {
+    const db = getDbSync();
+    const result = db.exec("SELECT * FROM notifications WHERE userId = ? ORDER BY createdAt DESC LIMIT 50", [req.user.id]);
     if (result.length === 0) return res.json({ notifications: [] });
     const cols = result[0].columns;
     const notifications = result[0].values.map(row => {
@@ -1185,7 +1348,7 @@ app.get('/api/notifications', authMiddleware, adminMiddleware, (req, res) => {
 app.get('/api/notifications/unread-count', authMiddleware, adminMiddleware, (req, res) => {
   try {
     const db = getDbSync();
-    const result = db.exec("SELECT COUNT(*) as c FROM notifications WHERE read = 0");
+    const result = db.exec("SELECT COUNT(*) as c FROM notifications WHERE read = 0 AND userId IS NULL");
     res.json({ count: result[0].values[0][0] });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -1195,7 +1358,7 @@ app.get('/api/notifications/unread-count', authMiddleware, adminMiddleware, (req
 app.put('/api/notifications/:id/read', authMiddleware, adminMiddleware, (req, res) => {
   try {
     const db = getDbSync();
-    db.run("UPDATE notifications SET read = 1 WHERE id = ?", [parseInt(req.params.id)]);
+    db.run("UPDATE notifications SET read = 1 WHERE id = ? AND userId IS NULL", [parseInt(req.params.id)]);
     saveDb();
     res.json({ message: 'Notification marked read' });
   } catch (err) {
@@ -1206,7 +1369,7 @@ app.put('/api/notifications/:id/read', authMiddleware, adminMiddleware, (req, re
 app.put('/api/notifications/read-all', authMiddleware, adminMiddleware, (req, res) => {
   try {
     const db = getDbSync();
-    db.run("UPDATE notifications SET read = 1 WHERE read = 0");
+    db.run("UPDATE notifications SET read = 1 WHERE read = 0 AND userId IS NULL");
     saveDb();
     res.json({ message: 'All notifications marked read' });
   } catch (err) {
@@ -1269,6 +1432,10 @@ app.delete('/api/users/:id', authMiddleware, adminMiddleware, (req, res) => {
     if (row.length > 0 && row[0].values.length > 0 && row[0].values[0][0] === 1) {
       return res.status(400).json({ error: 'Admins must be demoted before deletion' });
     }
+    db.run("DELETE FROM favorites WHERE userId = ?", [id]);
+    db.run("DELETE FROM saved_searches WHERE userId = ?", [id]);
+    db.run("DELETE FROM offers WHERE userId = ?", [id]);
+    db.run("DELETE FROM notifications WHERE userId = ?", [id]);
     db.run("DELETE FROM users WHERE id = ?", [id]);
     saveDb();
     res.json({ message: 'User deleted' });
@@ -1278,7 +1445,7 @@ app.delete('/api/users/:id', authMiddleware, adminMiddleware, (req, res) => {
 });
 
 // ===== CSV IMPORT + BULK =====
-app.post('/api/properties/import', authMiddleware, adminMiddleware, upload.single('file'), (req, res) => {
+app.post('/api/properties/import', authMiddleware, adminMiddleware, csvUpload.single('file'), (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const content = fs.readFileSync(req.file.path, 'utf8');
@@ -1398,6 +1565,23 @@ app.get('/api/testimonials', (req, res) => {
   }
 });
 
+app.get('/api/testimonials/admin', authMiddleware, adminMiddleware, (req, res) => {
+  try {
+    const db = getDbSync();
+    const result = db.exec("SELECT * FROM testimonials ORDER BY createdAt DESC");
+    if (result.length === 0) return res.json({ testimonials: [] });
+    const cols = result[0].columns;
+    const testimonials = result[0].values.map(row => {
+      const obj = {};
+      cols.forEach((col, i) => { obj[col] = row[i]; });
+      return obj;
+    });
+    res.json({ testimonials });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/testimonials', authMiddleware, adminMiddleware, (req, res) => {
   try {
     const { name, role, content, rating, avatar } = req.body;
@@ -1441,6 +1625,24 @@ app.get('/api/blog', (req, res) => {
   try {
     const db = getDbSync();
     const result = db.exec("SELECT * FROM blog_posts WHERE published = 1 ORDER BY createdAt DESC");
+    if (result.length === 0) return res.json({ posts: [] });
+    const cols = result[0].columns;
+    const posts = result[0].values.map(row => {
+      const obj = {};
+      cols.forEach((col, i) => { obj[col] = row[i]; });
+      if (obj.tags && typeof obj.tags === 'string') obj.tags = JSON.parse(obj.tags);
+      return obj;
+    });
+    res.json({ posts });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/blog/admin', authMiddleware, adminMiddleware, (req, res) => {
+  try {
+    const db = getDbSync();
+    const result = db.exec("SELECT * FROM blog_posts ORDER BY createdAt DESC");
     if (result.length === 0) return res.json({ posts: [] });
     const cols = result[0].columns;
     const posts = result[0].values.map(row => {
@@ -1625,7 +1827,7 @@ async function runSavedSearchAlerts() {
     let checked = 0;
     for (const s of searches) {
       const { whereClause, params } = buildSearchQuery(s.filters || {});
-      const since = s.lastAlertAt || s.createdAt || '1970-01-01';
+      const since = new Date(s.lastAlertAt || s.createdAt || '1970-01-01').toISOString().slice(0, 19).replace('T', ' ');
       const stmt = db.prepare(`SELECT id, title, price, city, state, image FROM properties ${whereClause} AND createdAt > ? ORDER BY createdAt DESC LIMIT 10`);
       stmt.bind([...params, since]);
       const matches = [];
@@ -1951,11 +2153,11 @@ app.post('/api/tours', async (req, res) => {
 });
 
 // ===== CHAT (Socket.io + REST) =====
-app.get('/api/chat/messages', authMiddleware, adminMiddleware, (req, res) => {
+app.get('/api/chat/messages', authMiddleware, (req, res) => {
   try {
     const db = getDbSync();
     const limit = getLimit(req);
-    const result = db.exec("SELECT * FROM chat_messages ORDER BY createdAt ASC LIMIT ?", [limit]);
+    const result = db.exec("SELECT * FROM (SELECT * FROM chat_messages ORDER BY createdAt DESC LIMIT ?) ORDER BY createdAt ASC", [limit]);
     if (result.length === 0) return res.json({ messages: [] });
     const cols = result[0].columns;
     const messages = result[0].values.map(row => {
@@ -1973,23 +2175,41 @@ io.on('connection', (socket) => {
   console.log('Chat client connected:', socket.id);
   let currentUser = null;
 
-  socket.on('join', (data) => {
-    currentUser = { userId: data.userId, name: data.name };
-    console.log(`User joined chat: ${data.name} (${data.userId})`);
+  socket.on('join', (data = {}) => {
+    try {
+      if (!data.token) throw new Error('Missing token');
+      const decoded = jwt.verify(data.token, JWT_SECRET);
+      const db = getDbSync();
+      const result = db.exec("SELECT id, name, email, isAdmin FROM users WHERE id = ?", [decoded.userId]);
+      if (result.length === 0 || result[0].values.length === 0) throw new Error('User not found');
+      const row = result[0].values[0];
+      currentUser = { id: row[0], name: row[1], email: row[2], isAdmin: row[3] === 1 };
+      if (currentUser.isAdmin) socket.join('admins');
+      socket.join(`user:${currentUser.id}`);
+      console.log(`User joined chat: ${currentUser.name} (${currentUser.id})`);
+      socket.emit('joined', { ok: true, user: { id: currentUser.id, name: currentUser.name, isAdmin: currentUser.isAdmin } });
+    } catch (err) {
+      console.log('Chat join rejected:', err.message);
+      socket.emit('auth-error', { message: 'Authentication failed. Please sign in.' });
+    }
   });
 
   socket.on('message', (data) => {
+    if (!data || typeof data.message !== 'string' || !data.message.trim()) return;
     const db = getDbSync();
+    const identity = currentUser
+      ? { id: currentUser.id, name: currentUser.name }
+      : { id: 'guest', name: 'Guest' };
     db.run("INSERT INTO chat_messages (userId, userName, message) VALUES (?, ?, ?)",
-      [data.userId, data.userName, data.message]);
+      [identity.id, identity.name, data.message.trim()]);
     const result = db.exec("SELECT last_insert_rowid()");
     const msgId = result[0].values[0][0];
     saveDb();
     io.emit('new-message', {
       id: msgId,
-      userId: data.userId,
-      userName: data.userName,
-      message: data.message,
+      userId: identity.id,
+      userName: identity.name,
+      message: data.message.trim(),
       createdAt: new Date().toISOString()
     });
   });
@@ -2005,7 +2225,7 @@ app.use((err, req, res, next) => {
     const msg = err.code === 'LIMIT_FILE_SIZE' ? 'File is too large (max 10MB)' : `Upload failed: ${err.message}`;
     return res.status(400).json({ error: msg });
   }
-  if (err && err.message && String(err.message).includes('Only image files')) {
+  if (err && err.message && (String(err.message).includes('Only image files') || String(err.message).includes('Only CSV files'))) {
     return res.status(400).json({ error: err.message });
   }
   console.error('Unhandled error:', err?.message || err);

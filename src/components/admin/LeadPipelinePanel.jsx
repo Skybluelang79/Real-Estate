@@ -122,7 +122,13 @@ export default function LeadPipelinePanel({ token, agents }) {
                 <div className="kanban-cards">
                   {cols.map(l => (
                     <div className="kanban-card" key={l.id} onClick={() => setSelected(l)}>
-                      <div className="kanban-card-name">{l.name || l.email}</div>
+                      <div className="kanban-card-head">
+                        <div className="kanban-card-name">{l.name || l.email}</div>
+                        <div className="kanban-card-moves">
+                          {stage !== 'new' && <button className="kanban-move kanban-move-left" title="Move back" onClick={(e) => { e.stopPropagation(); moveLead(l.id, STAGES[STAGES.indexOf(stage) - 1]); }}>◀</button>}
+                          {stage !== 'closed' && <button className="kanban-move kanban-move-right" title="Move forward" onClick={(e) => { e.stopPropagation(); moveLead(l.id, STAGES[STAGES.indexOf(stage) + 1]); }}>▶</button>}
+                        </div>
+                      </div>
                       <div className="kanban-card-sub">
                         <span className={`lead-type-badge lead-type-${l.type || 'buyer'}`}>{l.type || 'buyer'}</span>
                         {l.budget ? <span className="kanban-card-budget">${Number(l.budget).toLocaleString()}</span> : null}
@@ -134,10 +140,6 @@ export default function LeadPipelinePanel({ token, agents }) {
                     </div>
                   ))}
                   {cols.length === 0 && <div className="kanban-drop-hint">Drop here</div>}
-                </div>
-                <div className="kanban-move-row">
-                  {stage !== 'new' && <button className="kanban-move kanban-move-left" title="Move back" onClick={() => cols[0] && moveLead(cols[0].id, STAGES[STAGES.indexOf(stage) - 1])}>◀</button>}
-                  {stage !== 'closed' && <button className="kanban-move kanban-move-right" title="Move forward" onClick={() => cols[0] && moveLead(cols[0].id, STAGES[STAGES.indexOf(stage) + 1])}>▶</button>}
                 </div>
               </div>
             );

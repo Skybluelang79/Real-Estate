@@ -6,15 +6,21 @@ export default function Compare() {
   const { compareList, removeFromCompare, clearCompare } = useContext(CompareContext);
 
   const fields = [
-    { key: 'price', label: 'Price', fmt: v => `$${Number(v).toLocaleString()}` },
-    { key: 'bedrooms', label: 'Bedrooms' },
-    { key: 'bathrooms', label: 'Bathrooms' },
-    { key: 'sqft', label: 'Sq Ft', fmt: v => v ? `${Number(v).toLocaleString()} sqft` : 'N/A' },
-    { key: 'type', label: 'Type' },
-    { key: 'status', label: 'Status' },
-    { key: 'yearBuilt', label: 'Year Built' },
-    { key: 'location', label: 'Location' },
+    { label: 'Price', value: p => (p.price != null ? `$${Number(p.price).toLocaleString()}` : 'N/A') },
+    { label: 'Bedrooms', value: p => p.beds ?? 'N/A' },
+    { label: 'Bathrooms', value: p => p.baths ?? 'N/A' },
+    { label: 'Sq Ft', value: p => { const s = p.sqft || p.size; return s ? `${Number(s).toLocaleString()} sqft` : 'N/A'; } },
+    { label: 'Type', value: p => p.type || 'N/A' },
+    { label: 'Status', value: p => p.status || 'N/A' },
+    { label: 'Year Built', value: p => p.yearBuilt || 'N/A' },
+    { label: 'Location', value: p => [p.city, p.state].filter(Boolean).join(', ') || 'N/A' },
   ];
+
+  const featureText = (p) => {
+    if (Array.isArray(p.amenities)) return p.amenities.join(', ');
+    if (typeof p.amenities === 'string') return p.amenities;
+    return 'N/A';
+  };
 
   return (
     <div className="page compare-page">
@@ -49,21 +55,17 @@ export default function Compare() {
               </thead>
               <tbody>
                 {fields.map(f => (
-                  <tr key={f.key}>
+                  <tr key={f.label}>
                     <td className="compare-label">{f.label}</td>
                     {compareList.map(p => (
-                      <td key={p.id}>
-                        {p[f.key] !== undefined && p[f.key] !== null
-                          ? (f.fmt ? f.fmt(p[f.key]) : String(p[f.key]))
-                          : 'N/A'}
-                      </td>
+                      <td key={p.id}>{f.value(p)}</td>
                     ))}
                   </tr>
                 ))}
                 <tr>
                   <td className="compare-label">Features</td>
                   {compareList.map(p => (
-                    <td key={p.id}>{p.features ? p.features.split(',').join(', ') : 'N/A'}</td>
+                    <td key={p.id}>{featureText(p)}</td>
                   ))}
                 </tr>
               </tbody>

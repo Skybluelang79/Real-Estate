@@ -6,7 +6,10 @@ export const LanguageContext = createContext(null);
 const LANG_KEY = 'dreamhomes-lang';
 
 export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState('en');
+  const [lang, setLang] = useState(() => {
+    const stored = localStorage.getItem(LANG_KEY);
+    return stored === 'es' || stored === 'zh' ? stored : 'en';
+  });
 
   useEffect(() => {
     localStorage.setItem(LANG_KEY, lang);

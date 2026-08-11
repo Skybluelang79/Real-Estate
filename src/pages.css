@@ -5475,6 +5475,13 @@ body.dark-mode .ad-inline-card {
 .kanban-move-row { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
 .kanban-move { background: none; border: 1px solid var(--border); border-radius: 6px; width: 30px; height: 26px; cursor: pointer; color: var(--text); }
 .kanban-move:hover { background: rgba(201,168,76,0.15); }
+.kanban-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+.kanban-card-moves { display: flex; gap: 4px; }
+.kanban-card-moves .kanban-move { width: 24px; height: 22px; font-size: 0.7rem; }
+
+.admin-pagination { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px 0 4px; }
+.admin-pagination .admin-btn { padding: 6px 14px; }
+.admin-page-info { font-size: 0.85rem; color: var(--text-muted); }
 
 /* ---- Lead modal ---- */
 .admin-modal {
@@ -5621,5 +5628,52 @@ body.dark-mode .ad-inline-card {
   .about-values-grid,
   .about-team-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+.detail-price-history {
+  margin-top: 48px;
+  padding: 28px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, rgba(0,0,0,0.08));
+  border-radius: 16px;
+}
+.detail-price-history h2 {
+  font-family: var(--font-heading, 'Playfair Display', serif);
+  margin-bottom: 20px;
+}
+.price-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.price-history-item {
+  display: grid;
+  grid-template-columns: 130px 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 6px;
+  border-bottom: 1px solid var(--border, rgba(0,0,0,0.06));
+}
+.price-history-item:last-child {
+  border-bottom: none;
+}
+.price-history-date {
+  color: var(--text-secondary, #666);
+  font-size: 0.9rem;
+}
+.price-history-price {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text, #1A1714);
+}
+.price-history-note {
+  color: var(--text-secondary, #666);
+  font-size: 0.9rem;
+}
+@media (max-width: 640px) {
+  .price-history-item {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 }

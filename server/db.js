@@ -125,12 +125,15 @@ async function initializeDatabase() {
 
   db.run(`CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    userId INTEGER,
     type TEXT,
     message TEXT NOT NULL,
     link TEXT,
     read INTEGER DEFAULT 0,
     createdAt TEXT DEFAULT CURRENT_TIMESTAMP
   )`);
+
+  try { db.run("ALTER TABLE notifications ADD COLUMN userId INTEGER"); } catch (e) { /* already exists */ }
 
   db.run(`CREATE TABLE IF NOT EXISTS offers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -277,6 +280,34 @@ async function initializeDatabase() {
     referrer TEXT,
     createdAt TEXT DEFAULT CURRENT_TIMESTAMP
   )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS price_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    propertyId INTEGER NOT NULL,
+    price REAL NOT NULL,
+    date TEXT NOT NULL,
+    note TEXT
+  )`);
+  db.run("CREATE INDEX IF NOT EXISTS idx_price_history_property ON price_history (propertyId)");
+
+  const historyCount = db.exec("SELECT COUNT(*) as c FROM price_history");
+  if (historyCount.length === 0 || historyCount[0].values[0][0] === 0) {
+    const props = db.exec("SELECT id, price, createdAt FROM properties");
+    if (props.length > 0 && props[0].values.length > 0) {
+      const rows = props[0].values;
+      const baseDate = new Date('2025-01-01');
+      for (const r of rows) {
+        const pid = r[0];
+        const price = parseFloat(r[1]) || 0;
+        if (!pid || price <= 0) continue;
+        const fmt = (d) => d.toISOString().slice(0, 10);
+        const monthsAgo = (m) => { const d = new Date(baseDate); d.setMonth(d.getMonth() + m); return fmt(d); };
+        db.run("INSERT INTO price_history (propertyId, price, date, note) VALUES (?, ?, ?, ?)", [pid, Math.round(price * 0.82), monthsAgo(18), 'Listed']);
+        db.run("INSERT INTO price_history (propertyId, price, date, note) VALUES (?, ?, ?, ?)", [pid, Math.round(price * 0.92), monthsAgo(8), 'Price adjustment']);
+        db.run("INSERT INTO price_history (propertyId, price, date, note) VALUES (?, ?, ?, ?)", [pid, price, fmt(new Date()), 'Current listing price']);
+      }
+    }
+  }
 
   db.run(`CREATE TABLE IF NOT EXISTS inquiries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -623,7 +654,9 @@ async function seedData() {
 function saveDb() {
   const data = db.export();
   const buffer = Buffer.from(data);
-  fs.writeFileSync(DB_PATH, buffer);
+  const tmpPath = `${DB_PATH}.tmp`;
+  fs.writeFileSync(tmpPath, buffer);
+  fs.renameSync(tmpPath, DB_PATH);
 }
 
 export async function getDb() {

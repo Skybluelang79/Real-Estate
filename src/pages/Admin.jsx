@@ -73,22 +73,30 @@ function AnalyticsPanel({ token }) {
 
 function TestimonialsPanel({ token }) {
   const [list, setList] = useState([]);
-  const [form, setForm] = useState({ name: '', role: '', content: '', rating: 5 });
+  const [form, setForm] = useState({ name: '', role: '', content: '', rating: 5, active: true });
   const [editing, setEditing] = useState(null);
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 
   const load = () => {
-    fetch(`${API_URL}/api/testimonials`)
+    fetch(`${API_URL}/api/testimonials/admin`, { headers })
       .then(r => r.json()).then(d => setList(d.testimonials || [])).catch(() => {});
   };
-  useEffect(load, []);
+  useEffect(load, [token]);
 
   const save = async (e) => {
     e.preventDefault();
     const method = editing ? 'PUT' : 'POST';
     const url = editing ? `${API_URL}/api/testimonials/${editing}` : `${API_URL}/api/testimonials`;
-    const res = await fetch(url, { method, headers, body: JSON.stringify(form) });
-    if (res.ok) { setForm({ name: '', role: '', content: '', rating: 5 }); setEditing(null); load(); }
+    const body = { ...form, active: form.active !== undefined ? form.active : true };
+    const res = await fetch(url, { method, headers, body: JSON.stringify(body) });
+    if (res.ok) { setForm({ name: '', role: '', content: '', rating: 5, active: true }); setEditing(null); load(); }
+  };
+
+  const toggleActive = async (id, active) => {
+    const t = list.find(x => x.id === id);
+    if (!t) return;
+    const res = await fetch(`${API_URL}/api/testimonials/${id}`, { method: 'PUT', headers, body: JSON.stringify({ ...t, active: !active }) });
+    if (res.ok) load();
   };
 
   const remove = async (id) => {
@@ -107,15 +115,16 @@ function TestimonialsPanel({ token }) {
         <div className="form-group"><label>Content</label><textarea rows={2} value={form.content} onChange={e => setForm({...form, content: e.target.value})} required /></div>
         <div className="form-row-2">
           <div className="form-group"><label>Rating (1-5)</label><input type="number" min={1} max={5} value={form.rating} onChange={e => setForm({...form, rating: parseInt(e.target.value) || 5})} /></div>
-          <div className="form-group" style={{ alignSelf: 'flex-end' }}>
+          <div className="form-group" style={{ alignSelf: 'flex-end', display: 'flex', gap: 12, alignItems: 'center' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}><input type="checkbox" checked={form.active !== false} onChange={e => setForm({...form, active: e.target.checked})} /> Active</label>
             <button type="submit" className="btn-primary">{editing ? 'Update' : 'Add Testimonial'}</button>
-            {editing && <button type="button" className="btn-ghost" onClick={() => { setForm({ name: '', role: '', content: '', rating: 5 }); setEditing(null); }} style={{ marginLeft: 8 }}>Cancel</button>}
+            {editing && <button type="button" className="btn-ghost" onClick={() => { setForm({ name: '', role: '', content: '', rating: 5, active: true }); setEditing(null); }} style={{ marginLeft: 8 }}>Cancel</button>}
           </div>
         </div>
       </form>
       <div className="admin-table-wrap">
         <table className="admin-table">
-          <thead><tr><th>Name</th><th>Content</th><th>Rating</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Content</th><th>Rating</th><th>Active</th><th>Actions</th></tr></thead>
           <tbody>
             {list.map(t => (
               <tr key={t.id} className="admin-table-row">
@@ -123,7 +132,12 @@ function TestimonialsPanel({ token }) {
                 <td className="admin-msg-cell">{(t.content || '').substring(0, 100)}</td>
                 <td>{'★'.repeat(t.rating)}{'★'.repeat(5 - t.rating)}</td>
                 <td>
-                  <button className="admin-btn-edit" onClick={() => { setEditing(t.id); setForm({ name: t.name, role: t.role || '', content: t.content, rating: t.rating }); }}>Edit</button>
+                  <button className={`admin-status-badge admin-status-${t.active ? 'scheduled' : 'pending'}`} style={{ cursor: 'pointer', border: 'none' }} onClick={() => toggleActive(t.id, !!t.active)} title="Click to toggle">
+                    {t.active ? 'Active' : 'Hidden'}
+                  </button>
+                </td>
+                <td>
+                  <button className="admin-btn-edit" onClick={() => { setEditing(t.id); setForm({ name: t.name, role: t.role || '', content: t.content, rating: t.rating, active: !!t.active }); }}>Edit</button>
                   <button className="admin-btn-delete" onClick={() => remove(t.id)}>Delete</button>
                 </td>
               </tr>
@@ -142,10 +156,10 @@ function BlogPanel({ token }) {
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 
   const load = () => {
-    fetch(`${API_URL}/api/blog`)
+    fetch(`${API_URL}/api/blog/admin`, { headers })
       .then(r => r.json()).then(d => setPosts(d.posts || [])).catch(() => {});
   };
-  useEffect(load, []);
+  useEffect(load, [token]);
 
   const save = async (e) => {
     e.preventDefault();
@@ -160,6 +174,11 @@ function BlogPanel({ token }) {
     if (!confirm('Delete this post?')) return;
     await fetch(`${API_URL}/api/blog/${id}`, { method: 'DELETE', headers });
     load();
+  };
+
+  const togglePublished = async (id, published) => {
+    const res = await fetch(`${API_URL}/api/blog/${id}`, { method: 'PUT', headers, body: JSON.stringify({ published: !published }) });
+    if (res.ok) load();
   };
 
   return (
@@ -186,13 +205,18 @@ function BlogPanel({ token }) {
       </form>
       <div className="admin-table-wrap">
         <table className="admin-table">
-          <thead><tr><th>Title</th><th>Author</th><th>Date</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Title</th><th>Author</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
             {posts.map(p => (
               <tr key={p.id} className="admin-table-row">
                 <td><strong>{p.title}</strong></td>
                 <td>{p.author || 'Admin'}</td>
                 <td>{p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}</td>
+                <td>
+                  <button className={`admin-status-badge admin-status-${p.published ? 'scheduled' : 'pending'}`} style={{ cursor: 'pointer', border: 'none' }} onClick={() => togglePublished(p.id, !!p.published)} title="Click to toggle">
+                    {p.published ? 'Published' : 'Draft'}
+                  </button>
+                </td>
                 <td>
                   <button className="admin-btn-edit" onClick={() => {
                     setEditing(p.id);
@@ -263,6 +287,8 @@ export default function Admin() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState('title');
   const [sortDir, setSortDir] = useState('asc');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 25;
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [statsVisible, setStatsVisible] = useState(false);
   const statsRef = useRef(null);
@@ -355,8 +381,8 @@ export default function Admin() {
     setFormData({
       title: p.name || p.title || '', address: p.address || '', city: p.city || '', state: p.state || '', zip: p.zipcode || p.zip || '',
       country: p.country || 'US', price: p.price || '', beds: p.beds || '', baths: p.baths || '', sqft: p.size || p.sqft || '', type: p.type || 'House',
-      yearBuilt: p.yearBuilt || '', description: p.description || '', agent: agentName, agentPhone: agentObj.phone || '',
-      agentEmail: agentObj.email || '', tags: tagsStr, image: p.image || '', images: imagesStr, video: p.video || '',
+      yearBuilt: p.yearBuilt || '', description: p.description || '', agent: agentName, agentPhone: p.agentPhone || (typeof agentObj !== 'string' ? agentObj.phone : '') || '',
+      agentEmail: p.agentEmail || (typeof agentObj !== 'string' ? agentObj.email : '') || '', tags: tagsStr, image: p.image || '', images: imagesStr, video: p.video || '',
       floorPlan: p.floorPlan || '', isPrivate: p.isPrivate || 0,
       badge: p.badge || 'New',
       featured: p.featured || false, latitude: p.latitude || '', longitude: p.longitude || '',
@@ -534,6 +560,42 @@ export default function Admin() {
     } catch { showToast('Error deleting offer'); }
   };
 
+  const updateTourStatus = async (id, status) => {
+    try {
+      const res = await fetch(`${API_URL}/api/tours/${id}`, { method: 'PUT', headers, body: JSON.stringify({ status }) });
+      if (res.ok) {
+        setTours(prev => prev.map(t => t.id === id ? { ...t, status } : t));
+        showToast(`Tour marked ${status}`);
+      } else {
+        showToast('Failed to update tour');
+      }
+    } catch { showToast('Error updating tour'); }
+  };
+
+  const updateContactStatus = async (id, status) => {
+    try {
+      const res = await fetch(`${API_URL}/api/contacts/${id}`, { method: 'PUT', headers, body: JSON.stringify({ status }) });
+      if (res.ok) {
+        setContacts(prev => prev.map(c => c.id === id ? { ...c, status } : c));
+        showToast(`Contact marked ${status}`);
+      } else {
+        showToast('Failed to update contact');
+      }
+    } catch { showToast('Error updating contact'); }
+  };
+
+  const updatePrequalStatus = async (id, status) => {
+    try {
+      const res = await fetch(`${API_URL}/api/pre-qualifications/${id}`, { method: 'PUT', headers, body: JSON.stringify({ status }) });
+      if (res.ok) {
+        setPrequals(prev => prev.map(q => q.id === id ? { ...q, status } : q));
+        showToast(`Marked ${status}`);
+      } else {
+        showToast('Failed to update pre-qualification');
+      }
+    } catch { showToast('Error updating pre-qualification'); }
+  };
+
   const filtered = properties.filter((p) => {
     const s = searchTerm.toLowerCase();
     return !s || (p.title && p.title.toLowerCase().includes(s)) || (p.city && p.city.toLowerCase().includes(s)) || (p.state && p.state.toLowerCase().includes(s));
@@ -543,6 +605,9 @@ export default function Admin() {
     if (sortField === 'beds') return (a.beds - b.beds) * dir;
     return ((a.title || '').localeCompare(b.title || '')) * dir;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   if (!user || !user.isAdmin) return null;
 
@@ -624,7 +689,7 @@ export default function Admin() {
         {tab === 'properties' && (
           <div className="admin-tab-content admin-tab-visible">
             <div className="admin-toolbar">
-              <input type="text" placeholder="Search properties..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="admin-search" />
+              <input type="text" placeholder="Search properties..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }} className="admin-search" />
               <select value={sortField} onChange={(e) => setSortField(e.target.value)} className="admin-sort">
                 <option value="title">Sort by Name</option>
                 <option value="price">Sort by Price</option>
@@ -677,7 +742,7 @@ export default function Admin() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((p) => (
+                  {pageItems.map((p) => (
                     <tr key={p.id || p._id} className={`admin-table-row ${selected.includes(p.id || p._id) ? 'admin-row-selected' : ''}`}>
                       <td>
                         <input type="checkbox" checked={selected.includes(p.id || p._id)} onChange={() => toggleSelect(p.id || p._id)} />
@@ -704,6 +769,13 @@ export default function Admin() {
                 </tbody>
               </table>
             </div>
+            {totalPages > 1 && (
+              <div className="admin-pagination">
+                <button className="admin-btn" disabled={page <= 1} onClick={() => setPage(page - 1)}>« Prev</button>
+                <span className="admin-page-info">Page {page} of {totalPages} ({filtered.length} properties)</span>
+                <button className="admin-btn" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next »</button>
+              </div>
+            )}
           </div>
         )}
 
@@ -711,9 +783,9 @@ export default function Admin() {
           <div className="admin-tab-content admin-tab-visible">
             <div className="admin-table-wrap">
               <table className="admin-table">
-                <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Home Price</th><th>Down</th><th>Monthly</th><th>Date</th></tr></thead>
+                <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Home Price</th><th>Down</th><th>Monthly</th><th>Status</th><th>Date</th></tr></thead>
                 <tbody>
-                  {prequals.length === 0 && <tr><td colSpan={7} className="admin-empty">No pre-qualifications yet.</td></tr>}
+                  {prequals.length === 0 && <tr><td colSpan={8} className="admin-empty">No pre-qualifications yet.</td></tr>}
                   {prequals.map((q) => (
                     <tr key={q.id} className="admin-table-row">
                       <td><strong>{q.name}</strong></td>
@@ -722,6 +794,14 @@ export default function Admin() {
                       <td>{q.homePrice ? `$${Number(q.homePrice).toLocaleString()}` : '-'}</td>
                       <td>{q.downPayment ? `$${Number(q.downPayment).toLocaleString()}` : '-'}</td>
                       <td>{q.monthlyPayment ? `$${Number(q.monthlyPayment).toLocaleString()}` : '-'}</td>
+                      <td>
+                        <select className="admin-sort" value={q.status || 'new'} onChange={(e) => updatePrequalStatus(q.id, e.target.value)}>
+                          <option value="new">New</option>
+                          <option value="contacted">Contacted</option>
+                          <option value="qualified">Qualified</option>
+                          <option value="disqualified">Disqualified</option>
+                        </select>
+                      </td>
                       <td>{q.createdAt ? new Date(q.createdAt).toLocaleDateString() : '-'}</td>
                     </tr>
                   ))}
@@ -754,14 +834,22 @@ export default function Admin() {
           <div className="admin-tab-content admin-tab-visible">
             <div className="admin-table-wrap">
               <table className="admin-table">
-                <thead><tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th></tr></thead>
+                <thead><tr><th>Name</th><th>Email</th><th>Message</th><th>Status</th><th>Date</th></tr></thead>
                 <tbody>
-                  {contacts.length === 0 && <tr><td colSpan={4} className="admin-empty">No contacts yet.</td></tr>}
+                  {contacts.length === 0 && <tr><td colSpan={5} className="admin-empty">No contacts yet.</td></tr>}
                   {contacts.map((c) => (
                     <tr key={c.id} className="admin-table-row">
                       <td><strong>{c.name}</strong></td>
                       <td>{c.email}</td>
                       <td className="admin-msg-cell">{(c.message || '').substring(0, 80)}{(c.message || '').length > 80 ? '...' : ''}</td>
+                      <td>
+                        <select className="admin-sort" value={c.status || 'new'} onChange={(e) => updateContactStatus(c.id, e.target.value)}>
+                          <option value="new">New</option>
+                          <option value="contacted">Contacted</option>
+                          <option value="followed-up">Followed Up</option>
+                          <option value="closed">Closed</option>
+                        </select>
+                      </td>
                       <td>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-'}</td>
                     </tr>
                   ))}
@@ -784,7 +872,14 @@ export default function Admin() {
                       <td>{t.propertyTitle || `Property #${t.propertyId}`}</td>
                       <td>{t.preferredDate || '-'}</td>
                       <td>{t.preferredTime || '-'}</td>
-                      <td><span className={`admin-status-badge admin-status-${t.status || 'pending'}`}>{t.status || 'pending'}</span></td>
+                      <td>
+                        <select className="admin-sort" value={t.status || 'pending'} onChange={(e) => updateTourStatus(t.id, e.target.value)}>
+                          <option value="pending">Pending</option>
+                          <option value="scheduled">Scheduled</option>
+                          <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

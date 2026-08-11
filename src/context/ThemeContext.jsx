@@ -10,9 +10,9 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     if (darkMode) {
-      document.body.classList.add('dark');
+      document.body.classList.add('dark', 'dark-mode');
     } else {
-      document.body.classList.remove('dark');
+      document.body.classList.remove('dark', 'dark-mode');
     }
     localStorage.setItem('dreamhomes_theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
