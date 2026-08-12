@@ -2,12 +2,18 @@ import initSqlJs from 'sql.js';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DB_PATH = path.join(__dirname, 'dreamhomes.db');
+let DB_PATH = process.env.DB_PATH || path.join(__dirname, 'dreamhomes.db');
+try {
+  fs.accessSync(path.dirname(DB_PATH), fs.constants.W_OK);
+} catch {
+  DB_PATH = path.join(os.tmpdir(), 'dreamhomes.db');
+}
 let db = null;
 
 async function initializeDatabase() {
@@ -652,11 +658,15 @@ async function seedData() {
 }
 
 function saveDb() {
-  const data = db.export();
-  const buffer = Buffer.from(data);
-  const tmpPath = `${DB_PATH}.tmp`;
-  fs.writeFileSync(tmpPath, buffer);
-  fs.renameSync(tmpPath, DB_PATH);
+  try {
+    const data = db.export();
+    const buffer = Buffer.from(data);
+    const tmpPath = `${DB_PATH}.tmp`;
+    fs.writeFileSync(tmpPath, buffer);
+    fs.renameSync(tmpPath, DB_PATH);
+  } catch (err) {
+    console.warn('saveDb: could not persist database:', err.message);
+  }
 }
 
 export async function getDb() {

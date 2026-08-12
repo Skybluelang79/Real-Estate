@@ -6,13 +6,14 @@ import jwt from 'jsonwebtoken';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import crypto from 'crypto';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import nodemailer from 'nodemailer';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { getDb, saveDb } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,9 +28,17 @@ if (!process.env.JWT_SECRET) {
 }
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5177';
 
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+let uploadsDir = path.join(__dirname, 'uploads');
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch {
+  const tmpUploadsDir = path.join(os.tmpdir(), 'dreamhomes-uploads');
+  if (!fs.existsSync(tmpUploadsDir)) {
+    fs.mkdirSync(tmpUploadsDir, { recursive: true });
+  }
+  uploadsDir = tmpUploadsDir;
 }
 
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif']);
@@ -82,9 +91,13 @@ app.use(helmet({
   } : false,
 }));
 app.use(express.json());
-const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 600, standardHeaders: true, legacyHeaders: false });
+const ipKey = (req) => {
+  const ip = req.ip || req.headers['x-forwarded-for'] || req.headers['cf-connecting-ip'] || 'anonymous';
+  return ipKeyGenerator(ip);
+};
+const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 600, standardHeaders: true, legacyHeaders: false, keyGenerator: ipKey });
 app.use('/api', apiLimiter);
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 50, standardHeaders: true, legacyHeaders: false });
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 50, standardHeaders: true, legacyHeaders: false, keyGenerator: ipKey });
 app.use('/api/auth', authLimiter);
 app.use('/uploads', express.static(uploadsDir));
 
@@ -2230,4 +2243,16 @@ async function startServer() {
   console.log(`[Saved Search Alerts] Scheduled to run every ${alertMinutes} minutes`);
 }
 
-startServer();
+export async function ensureDb() {
+  if (!dbInstance) {
+    dbInstance = await getDb();
+  }
+  return dbInstance;
+}
+
+export default app;
+
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isMain) {
+  startServer();
+}
