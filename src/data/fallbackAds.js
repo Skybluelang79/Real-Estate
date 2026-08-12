@@ -1,0 +1,42 @@
+export const FALLBACK_ADS = [
+  {
+    id: 'fb-financing',
+    title: 'Mortgage Rates Starting at 4.5%',
+    description: 'Get pre-approved today and lock in the lowest rates. Trusted by thousands of homebuyers.',
+    image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=1200',
+    link: '/financing',
+    cta: 'Get Pre-Approved',
+  },
+  {
+    id: 'fb-valuation',
+    title: 'Complimentary Home Valuation',
+    description: 'Curious what your home is worth? Receive a private, expert valuation from our advisors.',
+    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200',
+    link: '/valuation',
+    cta: 'Value My Home',
+  },
+  {
+    id: 'fb-moving',
+    title: 'The Dream Homes Concierge',
+    description: 'From staging to settlement, our white-glove team manages every detail of your move.',
+    image: 'https://images.unsplash.com/photo-1600517806299-e3e0ee53c5d6?w=1200',
+    link: '/moving',
+    cta: 'Explore Services',
+  },
+  {
+    id: 'fb-interiors',
+    title: 'Signature Interior Design Studio',
+    description: 'Award-winning designers crafting bespoke interiors for the most discerning homeowners.',
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200',
+    link: '/properties',
+    cta: 'View Portfolio',
+  },
+  {
+    id: 'fb-safety',
+    title: 'Protect Your Estate',
+    description: 'Private-client coverage for luxury residences — art, collections, and full security solutions.',
+    image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200',
+    link: '/contact',
+    cta: 'Speak With Us',
+  },
+];

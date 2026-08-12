@@ -1,4 +1,4 @@
-﻿import { Suspense, lazy } from 'react'
+﻿import { Suspense, lazy, Fragment } from 'react'
 import { Routes, Route, Link, useSearchParams, useLocation } from 'react-router'
 import Header from './components/Header'
 import Footer from './components/Footer'
@@ -10,6 +10,10 @@ import NeighborhoodsPreview from './components/NeighborhoodsPreview'
 import CtaBanner from './components/CtaBanner'
 import Sponsors from './components/Sponsors'
 import Advertisements from './components/Advertisements'
+import NativeAdCard from './components/NativeAdCard'
+import PressStrip from './components/PressStrip'
+import LifestyleGallery from './components/LifestyleGallery'
+import useAds from './hooks/useAds'
 import Testimonials from './components/Testimonials'
 import JustListed from './components/JustListed'
 import RecentlyViewed from './components/RecentlyViewed'
@@ -90,6 +94,7 @@ function Home() {
   return (
     <>
       <Hero properties={properties} />
+      <PressStrip />
       <SaveSearchPrompt />
       <Reveal><StatsSection /></Reveal>
       <Reveal><JustListed /></Reveal>
@@ -134,6 +139,7 @@ function Home() {
           )}
         </div>
       </section>
+      <Reveal><Advertisements variant="showcase" /></Reveal>
       <Reveal><ServicesSection /></Reveal>
       <Reveal><HomeTools /></Reveal>
       <Reveal><OpenHousesSection /></Reveal>
@@ -145,6 +151,7 @@ function Home() {
       </Suspense>
       <Reveal><Testimonials /></Reveal>
       <Reveal><BlogPreview /></Reveal>
+      <Reveal><LifestyleGallery /></Reveal>
       <Reveal><CtaBanner /></Reveal>
       <Advertisements />
       <Sponsors />
@@ -214,6 +221,7 @@ function PropertiesPage() {
   };
 
   const { data, isLoading, isError } = usePropertiesQuery(params);
+  const ads = useAds();
   const properties = data?.properties || [];
   const total = data?.total || 0;
   const totalPages = data?.totalPages || 0;
@@ -358,8 +366,11 @@ function PropertiesPage() {
             ) : (
               <>
                 <div className="property-grid">
-                  {properties.map((p) => (
-                    <PropertyCard key={p.id || p._id} property={p} />
+                  {properties.map((p, i) => (
+                    <Fragment key={p.id || p._id}>
+                      <PropertyCard property={p} />
+                      {i % 6 === 5 && ads.length > 0 && <NativeAdCard ad={ads[i % ads.length]} />}
+                    </Fragment>
                   ))}
                 </div>
                 {totalPages > 1 && (

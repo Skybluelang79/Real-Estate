@@ -4506,11 +4506,13 @@ body.dark-mode .ad-inline-card {
 .ads-section {
   margin: 0;
   position: relative;
+  border-top: 1px solid rgba(201, 168, 76, 0.2);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.2);
 }
 
 .ads-carousel {
   position: relative;
-  height: 320px;
+  height: 340px;
   overflow: hidden;
   border-radius: 0;
   background: var(--bg-secondary);
@@ -4573,24 +4575,25 @@ body.dark-mode .ad-inline-card {
 
 .ad-badge {
   display: inline-block;
-  background: rgba(201, 168, 76, 0.2);
-  color: #C9A84C;
-  font-size: 0.65rem;
+  background: rgba(201, 168, 76, 0.14);
+  color: #D9BE6F;
+  font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  padding: 4px 12px;
-  border-radius: 4px;
-  margin-bottom: 12px;
-  border: 1px solid rgba(201, 168, 76, 0.3);
+  letter-spacing: 0.3em;
+  padding: 6px 16px;
+  border-radius: 999px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(201, 168, 76, 0.4);
 }
 
 .ad-banner-content h3 {
-  font-size: 1.6rem;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
   font-weight: 700;
   color: #fff;
-  margin: 0 0 8px;
-  font-family: 'Playfair Display', serif;
+  margin: 0 0 10px;
+  font-family: var(--font-heading, 'Playfair Display', serif);
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
 }
 
 .ad-banner-content p {
@@ -4642,7 +4645,186 @@ body.dark-mode .ad-inline-card {
   .ad-sidebar { width: 100%; position: static; }
   .ad-inline-card { flex-direction: column; }
   .ad-inline-card img { width: 100%; height: 140px; }
-  .ad-inline-body { padding: 12px; }
+}
+
+/* ==================== LUXURY AD SHOWCASE ==================== */
+.ads-showcase-section {
+  padding: 88px 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201, 168, 76, 0.07), transparent 70%),
+    var(--bg, #fff);
+  border-top: 1px solid rgba(201, 168, 76, 0.18);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.18);
+  position: relative;
+  overflow: hidden;
+}
+
+.ads-showcase-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(201, 168, 76, 0.12) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, rgba(0,0,0,0.5), transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, rgba(0,0,0,0.5), transparent 75%);
+  pointer-events: none;
+}
+
+.ads-showcase-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.ads-showcase-kicker {
+  display: inline-block;
+  font-size: 0.68rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: #C9A84C;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding: 6px 18px;
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  border-radius: 999px;
+  background: rgba(201, 168, 76, 0.08);
+}
+
+.ads-showcase-header h2 {
+  font-family: var(--font-heading, 'Playfair Display', serif);
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  color: var(--text, #1A1714);
+  margin: 0 0 10px;
+}
+
+.ads-showcase-header p {
+  color: var(--text-secondary, #666);
+  font-size: 0.95rem;
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.ads-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.ads-showcase-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+  border-radius: 18px;
+  overflow: hidden;
+  text-decoration: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+  animation: fadeInUp 0.6s ease both;
+}
+
+.ads-showcase-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.13);
+  border-color: rgba(201, 168, 76, 0.55);
+}
+
+.ads-showcase-media {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.ads-showcase-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ads-showcase-card:hover .ads-showcase-media img {
+  transform: scale(1.07);
+}
+
+.ads-showcase-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(20, 16, 10, 0.55));
+}
+
+.ads-showcase-tag {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: rgba(201, 168, 76, 0.95);
+  color: #1A1714;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 4px;
+  z-index: 2;
+}
+
+.ads-showcase-body {
+  padding: 24px 24px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.ads-showcase-body h3 {
+  font-family: var(--font-heading, 'Playfair Display', serif);
+  font-size: 1.25rem;
+  color: var(--text, #1A1714);
+  margin: 0;
+}
+
+.ads-showcase-body p {
+  font-size: 0.88rem;
+  color: var(--text-secondary, #666);
+  line-height: 1.65;
+  margin: 0;
+  flex: 1;
+}
+
+.ads-showcase-cta {
+  color: #C9A84C;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: gap 0.3s ease;
+}
+
+.ads-showcase-card:hover .ads-showcase-cta {
+  gap: 10px;
+}
+
+body.dark-mode .ads-showcase-section {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201, 168, 76, 0.1), transparent 70%),
+    #141210;
+  border-color: rgba(201, 168, 76, 0.2);
+}
+
+body.dark-mode .ads-showcase-card {
+  background: linear-gradient(135deg, #1F1D1A, #26231E);
+  border-color: #3D3A35;
+}
+
+@media (max-width: 1024px) {
+  .ads-showcase-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .ads-showcase-section { padding: 64px 0; }
+  .ads-showcase-grid { grid-template-columns: 1fr; }
+  .ads-showcase-media { height: 180px; }
 }
 
 /* ==================== MICRO-ANIMATIONS ==================== */
@@ -5838,4 +6020,222 @@ body.dark-mode .ad-inline-card {
   .detail-price-alert {
     flex-direction: column;
   }
+}
+
+/* ==================== PRESS STRIP ==================== */
+.press-strip {
+  border-top: 1px solid var(--border, rgba(0,0,0,0.08));
+  border-bottom: 1px solid var(--border, rgba(0,0,0,0.08));
+  padding: 22px 0;
+  background: var(--bg-secondary, #F7F5F0);
+}
+
+.press-strip .container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 24px 32px;
+}
+
+.press-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-muted, #9A9278);
+}
+
+.press-brands {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+
+.press-brand {
+  font-family: var(--font-heading, 'Playfair Display', serif);
+  font-size: 1.05rem;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: #8A8270;
+  opacity: 0.75;
+  transition: opacity 0.3s ease, color 0.3s ease;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.press-brand:hover {
+  opacity: 1;
+  color: #C9A84C;
+}
+
+body.dark-mode .press-strip {
+  background: #141210;
+  border-color: #2A2722;
+}
+
+/* ==================== SECTION KICKER ==================== */
+.section-kicker {
+  display: inline-block;
+  font-size: 0.68rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #C9A84C;
+  margin-bottom: 10px;
+}
+
+/* ==================== LIFESTYLE GALLERY ==================== */
+.lifestyle-gallery-section {
+  background: var(--bg, #fff);
+}
+
+.lifestyle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.lifestyle-tile {
+  position: relative;
+  display: block;
+  height: 300px;
+  border-radius: 16px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
+}
+
+.lifestyle-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(20, 16, 10, 0) 35%, rgba(20, 16, 10, 0.75));
+  opacity: 0.85;
+  transition: opacity 0.4s ease;
+}
+
+.lifestyle-tile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+.lifestyle-tile:hover::after {
+  opacity: 1;
+}
+
+.lifestyle-caption {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 18px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lifestyle-label {
+  font-family: var(--font-heading, 'Playfair Display', serif);
+  font-size: 1.2rem;
+  color: #fff;
+  font-weight: 600;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.lifestyle-sub {
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+@media (max-width: 1024px) {
+  .lifestyle-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .lifestyle-grid { grid-template-columns: 1fr; }
+  .lifestyle-tile { height: 240px; }
+}
+
+/* ==================== NATIVE AD CARD (properties grid) ==================== */
+.native-ad-link {
+  display: block;
+  text-decoration: none;
+  border-radius: var(--radius-lg, 14px);
+  overflow: hidden;
+  background: var(--surface, #fff);
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.native-ad-link:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.13);
+  border-color: rgba(201, 168, 76, 0.7);
+}
+
+.native-ad-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.native-ad-media {
+  height: 220px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  transition: transform 0.5s ease;
+}
+
+.native-ad-link:hover .native-ad-media {
+  transform: scale(1.04);
+}
+
+.native-ad-body {
+  padding: 20px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.native-ad-body h4 {
+  font-family: var(--font-heading, 'Playfair Display', serif);
+  font-size: 1.15rem;
+  color: var(--text, #1A1714);
+  margin: 0;
+}
+
+.native-ad-body p {
+  font-size: 0.86rem;
+  color: var(--text-secondary, #666);
+  line-height: 1.6;
+  margin: 0;
+  flex: 1;
+}
+
+.native-ad-cta {
+  color: #C9A84C;
+  font-weight: 700;
+  font-size: 0.84rem;
+  letter-spacing: 0.03em;
+  margin-top: 4px;
+}
+
+body.dark-mode .native-ad-link {
+  background: linear-gradient(135deg, #1F1D1A, #26231E);
+  border-color: rgba(201, 168, 76, 0.35);
+}
+
+@media (max-width: 768px) {
+  .native-ad-media { height: 180px; }
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import API_URL from '../config';
+import useAds from '../hooks/useAds';
 
 function AdCanvas({ ad: _ad, isActive }) {
   const canvasRef = useRef(null);
@@ -86,15 +86,8 @@ function AdDots({ ads, current, onChange }) {
 }
 
 export default function Advertisements({ variant = 'hero' }) {
-  const [ads, setAds] = useState([]);
+  const ads = useAds();
   const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    fetch(`${API_URL}/api/ads`)
-      .then(r => r.json())
-      .then(d => setAds(d.ads || []))
-      .catch(() => {});
-  }, []);
 
   const next = useCallback(() => {
     if (ads.length === 0) return;
@@ -143,6 +136,39 @@ export default function Advertisements({ variant = 'hero' }) {
           </a>
         ))}
       </div>
+    );
+  }
+
+  if (variant === 'showcase') {
+    return (
+      <section className="ads-showcase-section">
+        <div className="container">
+          <div className="ads-showcase-header">
+            <span className="ads-showcase-kicker">Curated Partners</span>
+            <h2>Featured Brands &amp; Partners</h2>
+            <p>Trusted names we work with to make every move effortless and every home exceptional.</p>
+          </div>
+          <div className="ads-showcase-grid">
+            {ads.slice(0, 3).map((ad, i) => (
+              <a key={ad.id} href={ad.link || '#'} className="ads-showcase-card" target="_blank" rel="noopener noreferrer" style={{ animationDelay: `${i * 0.08}s` }}>
+                <div className="ads-showcase-media">
+                  {ad.image && <img src={ad.image} alt={ad.title} loading="lazy" />}
+                  <div className="ads-showcase-overlay" />
+                  <span className="ads-showcase-tag">Sponsored</span>
+                </div>
+                <div className="ads-showcase-body">
+                  <h3>{ad.title}</h3>
+                  <p>{ad.description}</p>
+                  <span className="ads-showcase-cta">
+                    {ad.cta || 'Learn More'}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
     );
   }
 
