@@ -100,28 +100,31 @@ export default function MortgageCalculator({ isOpen, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content mortgage-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>×</button>
+        <button className="modal-close" onClick={onClose} aria-label="Close mortgage calculator">×</button>
         <h2>Mortgage Calculator</h2>
         <div className="mortgage-form">
           <div className="mortgage-field">
-            <label>Home Price ($)</label>
+            <label htmlFor="mortgage-home-price">Home Price ($)</label>
             <input
+              id="mortgage-home-price"
               type="number"
               value={homePrice}
               onChange={(e) => setHomePrice(Number(e.target.value))}
             />
           </div>
           <div className="mortgage-field">
-            <label>Down Payment ($)</label>
+            <label htmlFor="mortgage-down-payment">Down Payment ($)</label>
             <input
+              id="mortgage-down-payment"
               type="number"
               value={downPayment}
               onChange={(e) => setDownPayment(Number(e.target.value))}
             />
           </div>
           <div className="mortgage-field">
-            <label>Interest Rate (%)</label>
+            <label htmlFor="mortgage-interest-rate">Interest Rate (%)</label>
             <input
+              id="mortgage-interest-rate"
               type="number"
               step="0.1"
               value={interestRate}
@@ -129,8 +132,8 @@ export default function MortgageCalculator({ isOpen, onClose }) {
             />
           </div>
           <div className="mortgage-field">
-            <label>Loan Term (years)</label>
-            <select value={loanTerm} onChange={(e) => setLoanTerm(Number(e.target.value))}>
+            <label htmlFor="mortgage-loan-term">Loan Term (years)</label>
+            <select id="mortgage-loan-term" value={loanTerm} onChange={(e) => setLoanTerm(Number(e.target.value))}>
               <option value={0.5}>6 months</option>
               <option value={1}>1 year</option>
               <option value={10}>10 years</option>
@@ -166,10 +169,10 @@ export default function MortgageCalculator({ isOpen, onClose }) {
           <p className="admin-sub-text">{t('prequal.subtitle')}</p>
           <form onSubmit={submitPrequal} className="tour-form">
             <div className="form-row-2">
-              <input type="text" placeholder={t('prequal.name')} value={pqForm.name} onChange={(e) => setPqForm({ ...pqForm, name: e.target.value })} />
-              <input type="email" placeholder={t('prequal.email')} value={pqForm.email} onChange={(e) => setPqForm({ ...pqForm, email: e.target.value })} />
+              <input type="text" placeholder={t('prequal.name')} aria-label="Name" value={pqForm.name} onChange={(e) => setPqForm({ ...pqForm, name: e.target.value })} />
+              <input type="email" placeholder={t('prequal.email')} aria-label="Email" value={pqForm.email} onChange={(e) => setPqForm({ ...pqForm, email: e.target.value })} />
             </div>
-            <input type="tel" placeholder={t('prequal.phone')} value={pqForm.phone} onChange={(e) => setPqForm({ ...pqForm, phone: e.target.value })} />
+            <input type="tel" placeholder={t('prequal.phone')} aria-label="Phone number" value={pqForm.phone} onChange={(e) => setPqForm({ ...pqForm, phone: e.target.value })} />
             <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={pqSubmitting}>{pqSubmitting ? 'Submitting…' : t('prequal.submit')}</button>
             {pqStatus && <p className="form-status-msg">{pqStatus}</p>}
           </form>

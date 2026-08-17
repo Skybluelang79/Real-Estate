@@ -71,11 +71,11 @@ export default function ChatWidget({ user }) {
 
   return (
     <>
-      <button className="chat-toggle" onClick={() => setOpen(o => !o)} aria-label="Chat">
+      <button className="chat-toggle" onClick={() => setOpen(o => !o)} aria-label={open ? 'Close chat' : 'Open chat'} aria-expanded={open}>
         {open ? '✕' : '💬'}
       </button>
       {open && (
-        <div className="chat-widget">
+        <div className="chat-widget" role="dialog" aria-label="Live chat">
           <div className="chat-header">
             <strong>Live Chat</strong>
             <span className={`chat-status ${isOnline ? 'online' : 'offline'}`}>
@@ -99,6 +99,7 @@ export default function ChatWidget({ user }) {
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="Type a message..."
+              aria-label="Type a message"
               disabled={!isOnline}
             />
             <button type="submit" disabled={!isOnline || !input.trim()}>Send</button>

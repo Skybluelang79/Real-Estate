@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthCtx';
 import { useTheme } from '../context/ThemeCtx';
@@ -149,9 +149,9 @@ export default function Header() {
           <div className="header-search-wrap">
             <form className={`header-search ${searchOpen ? 'header-search-open' : ''}`} onSubmit={handleSearch}>
               <svg className="header-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-              <input ref={searchInputRef} type="text" placeholder={t('header.searchPlaceholder')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onBlur={() => !searchQuery && setSearchOpen(false)} />
+              <input ref={searchInputRef} id="header-search" type="text" placeholder={t('header.searchPlaceholder')} aria-label={t('header.searchPlaceholder')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onBlur={() => !searchQuery && setSearchOpen(false)} />
             </form>
-            <button className="header-search-toggle" onClick={() => setSearchOpen(!searchOpen)} aria-label="Toggle search">
+            <button className="header-search-toggle" onClick={() => setSearchOpen(!searchOpen)} aria-label="Toggle search" aria-expanded={searchOpen}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             </button>
           </div>
@@ -167,7 +167,7 @@ export default function Header() {
             </Link>
 
             <div className="lang-dropdown" ref={langRef}>
-              <button className="lang-toggle" onClick={() => setLangOpen(!langOpen)} aria-label="Change language">
+              <button className="lang-toggle" onClick={() => setLangOpen(!langOpen)} aria-label="Change language" aria-expanded={langOpen}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 <span className="lang-code">{lang.toUpperCase()}</span>
               </button>
@@ -196,7 +196,7 @@ export default function Header() {
 
             {user && user.isAdmin && (
               <div className="notif-dropdown" ref={notifRef}>
-                <button className="notif-btn" onClick={() => setNotifOpen(!notifOpen)} aria-label="Notifications">
+                <button className="notif-btn" onClick={() => setNotifOpen(!notifOpen)} aria-label="Notifications" aria-expanded={notifOpen}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                   {unread > 0 && <span className="notif-badge">{unread > 99 ? '99+' : unread}</span>}
                 </button>
@@ -225,7 +225,7 @@ export default function Header() {
             )}
 
             <div className="account-dropdown" ref={dropdownRef}>
-              <button className="account-btn" onClick={() => setAccountOpen(!accountOpen)}>
+              <button className="account-btn" onClick={() => setAccountOpen(!accountOpen)} aria-label="Account menu" aria-expanded={accountOpen}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 {user && <span className="account-name">{user.name.split(' ')[0]}</span>}
               </button>
@@ -255,7 +255,7 @@ export default function Header() {
               )}
             </div>
 
-            <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)} aria-label={t('header.menu')}>
+            <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)} aria-label={t('header.menu')} aria-expanded={menuOpen}>
               <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
               <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
               <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />

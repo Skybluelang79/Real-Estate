@@ -41,7 +41,7 @@ export default function Agents() {
         ) : (
           <div className="agents-grid">
             {agents.map((agent) => (
-              <Link to={`/agents/${agent.id}`} key={agent.id} className="agent-card">
+              <Link to={`/agents/${agent.id}`} key={agent.id} className="agent-card card-hover">
                 <div className="agent-avatar">
                   {agent.photo ? <SafeImage src={agent.photo} alt={agent.name} /> : agent.name?.charAt(0) || 'A'}
                 </div>

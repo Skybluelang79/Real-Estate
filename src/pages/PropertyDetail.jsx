@@ -1,16 +1,16 @@
-﻿import { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
+﻿import { useState, useEffect, useRef, useCallback, useContext, useMemo, lazy, Suspense } from 'react';
 import { useParams, Link } from 'react-router';
 import { useAuth } from '../context/AuthCtx';
 import { CompareContext } from '../context/CompareContext';
-import MortgageCalculator from '../components/MortgageCalculator';
-import Lightbox from '../components/Lightbox';
+const MortgageCalculator = lazy(() => import('../components/MortgageCalculator'));
+const Lightbox = lazy(() => import('../components/Lightbox'));
 import Breadcrumbs from '../components/Breadcrumbs';
 import SafeImage from '../components/SafeImage';
-import NeighborhoodInsights from '../components/NeighborhoodInsights';
-import PDFFlyer from '../components/PDFFlyer';
+const NeighborhoodInsights = lazy(() => import('../components/NeighborhoodInsights'));
+const PDFFlyer = lazy(() => import('../components/PDFFlyer'));
 import Advertisements from '../components/Advertisements';
 import Seo from '../components/Seo';
-import AgentRating from '../components/AgentRating';
+const AgentRating = lazy(() => import('../components/AgentRating'));
 import API_URL from '../config';
 import usePageTitle from '../hooks/usePageTitle';
 import { usePropertyQuery, usePropertiesQuery } from '../api/properties';
@@ -391,6 +391,7 @@ export default function PropertyDetail() {
                   key={i}
                   className={`detail-thumb ${mainIdx === i ? 'detail-thumb-active' : ''} ${i >= images.length && hasFloorPlans ? 'detail-thumb-floorplan' : ''}`}
                   onClick={() => { setMainIdx(i); setMainImage(img); if (galleryTimerRef.current) { clearInterval(galleryTimerRef.current); } }}
+                  aria-label={`View image ${i + 1} of ${galleryImages.length}`}
                 >
                   <SafeImage src={img} alt={`${displayName} ${i + 1}`} />
                   {i >= images.length && hasFloorPlans && <span className="floorplan-label">Floor Plan</span>}
@@ -545,7 +546,7 @@ export default function PropertyDetail() {
                   <div className="property-agent-avatar">{agentName.charAt(0)}</div>
                   <div>
                     <strong>{agentName}</strong>
-                    <AgentRating id={agentName} name={agentName} />
+                    <Suspense fallback={null}><AgentRating id={agentName} name={agentName} /></Suspense>
                     {agentPhone && <span>{agentPhone}</span>}{agentEmail && <span>{agentEmail}</span>}
                   </div>
                 </div>
@@ -567,12 +568,12 @@ export default function PropertyDetail() {
                     {oh.description && <p className="detail-oh-desc">{oh.description}</p>}
                     <form className="detail-oh-form" onSubmit={e => { e.preventDefault(); submitOhRsvp(oh); }}>
                       <div className="form-row-2">
-                        <input required placeholder="Name" className="admin-input" value={ohForm.name} onChange={e => setOhForm({ ...ohForm, name: e.target.value })} />
-                        <input required type="email" placeholder="Email" className="admin-input" value={ohForm.email} onChange={e => setOhForm({ ...ohForm, email: e.target.value })} />
+                        <input required placeholder="Name" aria-label="Name" className="admin-input" value={ohForm.name} onChange={e => setOhForm({ ...ohForm, name: e.target.value })} />
+                        <input required type="email" placeholder="Email" aria-label="Email" className="admin-input" value={ohForm.email} onChange={e => setOhForm({ ...ohForm, email: e.target.value })} />
                       </div>
                       <div className="form-row-2">
-                        <input placeholder="Phone" className="admin-input" value={ohForm.phone} onChange={e => setOhForm({ ...ohForm, phone: e.target.value })} />
-                        <select className="admin-input" value={ohForm.guests} onChange={e => setOhForm({ ...ohForm, guests: e.target.value })}>
+                        <input placeholder="Phone" aria-label="Phone number" className="admin-input" value={ohForm.phone} onChange={e => setOhForm({ ...ohForm, phone: e.target.value })} />
+                        <select className="admin-input" value={ohForm.guests} onChange={e => setOhForm({ ...ohForm, guests: e.target.value })} aria-label="Number of guests">
                           {[1, 2, 3, 4, 5, 6].map(g => <option key={g} value={g}>{g} {g === 1 ? 'guest' : 'guests'}</option>)}
                         </select>
                       </div>
@@ -649,11 +650,11 @@ export default function PropertyDetail() {
               <h3>Send an Inquiry</h3>
               <form onSubmit={sendInquiry} className="tour-form">
                 <div className="form-row-2">
-                  <input type="text" placeholder="Your Name" value={inquiryForm.name} onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })} required />
-                  <input type="email" placeholder="Your Email" value={inquiryForm.email} onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })} required />
+                  <input type="text" placeholder="Your Name" aria-label="Your name" value={inquiryForm.name} onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })} required />
+                  <input type="email" placeholder="Your Email" aria-label="Your email" value={inquiryForm.email} onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })} required />
                 </div>
-                <input type="tel" placeholder="Phone (optional)" value={inquiryForm.phone} onChange={(e) => setInquiryForm({ ...inquiryForm, phone: e.target.value })} />
-                <textarea value={inquiryMsg} onChange={(e) => setInquiryMsg(e.target.value)} placeholder="Hi, I'm interested in this property..." rows={3} required />
+                <input type="tel" placeholder="Phone (optional)" aria-label="Phone number" value={inquiryForm.phone} onChange={(e) => setInquiryForm({ ...inquiryForm, phone: e.target.value })} />
+                <textarea value={inquiryMsg} onChange={(e) => setInquiryMsg(e.target.value)} placeholder="Hi, I'm interested in this property..." aria-label="Message" rows={3} required />
                 <button type="submit" className="btn-primary">Send Inquiry</button>
                 {inquiryStatus && <p className="form-status-msg">{inquiryStatus}</p>}
               </form>
@@ -672,6 +673,7 @@ export default function PropertyDetail() {
                     <input
                       type="email"
                       placeholder="Enter your email"
+                      aria-label="Email for price alerts"
                       value={priceAlertEmail}
                       onChange={(e) => setPriceAlertEmail(e.target.value)}
                       required
@@ -685,7 +687,9 @@ export default function PropertyDetail() {
           </div>
         </div>
 
-        <NeighborhoodInsights property={property} />
+        <Suspense fallback={null}>
+          <NeighborhoodInsights property={property} />
+        </Suspense>
 
         <Advertisements variant="inline" />
 
@@ -760,38 +764,40 @@ export default function PropertyDetail() {
         </div>
       )}
 
-      <Lightbox
-        isOpen={lightboxOpen}
-        images={galleryImages}
-        currentIndex={mainIdx}
-        imageAlt={displayName}
-        onClose={() => setLightboxOpen(false)}
-        onIndexChange={(idx) => { setMainIdx(idx); setMainImage(galleryImages[idx]); }}
-      />
+      <Suspense fallback={null}>
+        <Lightbox
+          isOpen={lightboxOpen}
+          images={galleryImages}
+          currentIndex={mainIdx}
+          imageAlt={displayName}
+          onClose={() => setLightboxOpen(false)}
+          onIndexChange={(idx) => { setMainIdx(idx); setMainImage(galleryImages[idx]); }}
+        />
 
-      <MortgageCalculator isOpen={calcOpen} onClose={() => setCalcOpen(false)} />
+        <MortgageCalculator isOpen={calcOpen} onClose={() => setCalcOpen(false)} />
 
-      {pdfOpen && property && <PDFFlyer property={property} onClose={() => setPdfOpen(false)} />}
+        {pdfOpen && property && <PDFFlyer property={property} onClose={() => setPdfOpen(false)} />}
+      </Suspense>
 
       {tourOpen && (
         <div className="modal-overlay" onClick={() => setTourOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setTourOpen(false)}>×</button>
+            <button className="modal-close" onClick={() => setTourOpen(false)} aria-label="Close tour form">×</button>
             <h2>Schedule a Tour</h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>{tourProperty}</p>
             <form onSubmit={scheduleTour} className="tour-form">
               <div className="form-row-2">
-                <input type="text" placeholder="Your Name" value={tourForm.name} onChange={(e) => setTourForm({ ...tourForm, name: e.target.value })} required />
-                <input type="email" placeholder="Your Email" value={tourForm.email} onChange={(e) => setTourForm({ ...tourForm, email: e.target.value })} required />
+                <input type="text" placeholder="Your Name" aria-label="Your name" value={tourForm.name} onChange={(e) => setTourForm({ ...tourForm, name: e.target.value })} required />
+                <input type="email" placeholder="Your Email" aria-label="Your email" value={tourForm.email} onChange={(e) => setTourForm({ ...tourForm, email: e.target.value })} required />
               </div>
               <div className="form-row-2">
-                <input type="tel" placeholder="Phone" value={tourForm.phone} onChange={(e) => setTourForm({ ...tourForm, phone: e.target.value })} required />
-                <input type="date" value={tourForm.date} onChange={(e) => setTourForm({ ...tourForm, date: e.target.value })} required />
+                <input type="tel" placeholder="Phone" aria-label="Phone number" value={tourForm.phone} onChange={(e) => setTourForm({ ...tourForm, phone: e.target.value })} required />
+                <input type="date" value={tourForm.date} onChange={(e) => setTourForm({ ...tourForm, date: e.target.value })} aria-label="Preferred date" required />
               </div>
-              <select value={tourForm.time} onChange={(e) => setTourForm({ ...tourForm, time: e.target.value })}>
+              <select value={tourForm.time} onChange={(e) => setTourForm({ ...tourForm, time: e.target.value })} aria-label="Preferred time">
                 {['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM'].map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
-              <input type="text" placeholder="Additional notes..." value={tourForm.notes} onChange={(e) => setTourForm({ ...tourForm, notes: e.target.value })} />
+              <input type="text" placeholder="Additional notes..." aria-label="Additional notes" value={tourForm.notes} onChange={(e) => setTourForm({ ...tourForm, notes: e.target.value })} />
               <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>Request Tour</button>
               {tourStatus && <p className="form-status-msg">{tourStatus}</p>}
             </form>
@@ -802,19 +808,19 @@ export default function PropertyDetail() {
       {offerOpen && (
         <div className="modal-overlay" onClick={() => setOfferOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setOfferOpen(false)}>×</button>
+            <button className="modal-close" onClick={() => setOfferOpen(false)} aria-label="Close offer form">×</button>
             <h2>Make an Offer</h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>{displayName} — {priceDisplay}</p>
             <form onSubmit={submitOffer} className="tour-form">
               <div className="form-row-2">
-                <input type="text" placeholder="Your Name" value={offerForm.name} onChange={(e) => setOfferForm({ ...offerForm, name: e.target.value })} required />
-                <input type="email" placeholder="Your Email" value={offerForm.email} onChange={(e) => setOfferForm({ ...offerForm, email: e.target.value })} required />
+                <input type="text" placeholder="Your Name" aria-label="Your name" value={offerForm.name} onChange={(e) => setOfferForm({ ...offerForm, name: e.target.value })} required />
+                <input type="email" placeholder="Your Email" aria-label="Your email" value={offerForm.email} onChange={(e) => setOfferForm({ ...offerForm, email: e.target.value })} required />
               </div>
               <div className="form-row-2">
-                <input type="tel" placeholder="Phone" value={offerForm.phone} onChange={(e) => setOfferForm({ ...offerForm, phone: e.target.value })} />
-                <input type="number" placeholder="Offer Amount ($)" min="1" value={offerForm.amount} onChange={(e) => setOfferForm({ ...offerForm, amount: e.target.value })} required />
+                <input type="tel" placeholder="Phone" aria-label="Phone number" value={offerForm.phone} onChange={(e) => setOfferForm({ ...offerForm, phone: e.target.value })} />
+                <input type="number" placeholder="Offer Amount ($)" aria-label="Offer amount in dollars" min="1" value={offerForm.amount} onChange={(e) => setOfferForm({ ...offerForm, amount: e.target.value })} required />
               </div>
-              <textarea rows={3} placeholder="Message to the seller (optional)..." value={offerForm.message} onChange={(e) => setOfferForm({ ...offerForm, message: e.target.value })} />
+              <textarea rows={3} placeholder="Message to the seller (optional)..." aria-label="Message to seller" value={offerForm.message} onChange={(e) => setOfferForm({ ...offerForm, message: e.target.value })} />
               <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>Submit Offer</button>
               {offerStatus && <p className="form-status-msg">{offerStatus}</p>}
               {!token && <p className="admin-sub-text" style={{ textAlign: 'center', marginTop: 8 }}>Sign in to track this offer from your profile.</p>}

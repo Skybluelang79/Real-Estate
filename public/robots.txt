@@ -1,8 +1,7 @@
 User-agent: *
 Allow: /
-
 Disallow: /admin
+Disallow: /profile
 Disallow: /api/
-Disallow: /private
 
-Sitemap: https://dreamhomes.com/sitemap.xml
+Sitemap: https://dreamhomes-realestate.netlify.app/sitemap.xml

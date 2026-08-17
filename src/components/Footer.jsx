@@ -51,8 +51,8 @@ export default function Footer() {
             <h4>{t('footer.contact')}</h4>
             <span>123 Dream Street</span>
             <span>Los Angeles, CA 90001</span>
-            <span>info@dreamhomes.com</span>
-            <span>(800) 555-HOME</span>
+            <a href="mailto:info@dreamhomes.com">info@dreamhomes.com</a>
+            <a href="tel:+18005554663">(800) 555-HOME</a>
           </div>
           <div className="footer-links-col">
             <h4>{t('footer.followUs')}</h4>
@@ -78,7 +78,7 @@ export default function Footer() {
             <span className="footer-badge">DRE #01987654</span>
             <span className="footer-badge">MLS Member</span>
             <span className="footer-badge footer-badge-eho">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
               Equal Housing Opportunity
             </span>
           </div>

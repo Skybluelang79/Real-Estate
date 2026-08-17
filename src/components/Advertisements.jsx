@@ -127,7 +127,7 @@ export default function Advertisements({ variant = 'hero' }) {
       <div className="ad-inline">
         {ads.slice(0, 1).map(ad => (
           <a key={ad.id} href={ad.link || '#'} className="ad-inline-card" target="_blank" rel="noopener noreferrer">
-            {ad.image && <img src={ad.image} alt={ad.title} />}
+            {ad.image && <img src={ad.image} alt={ad.title} loading="lazy" />}
             <div className="ad-inline-body">
               <span className="ad-badge-sm">Ad</span>
               <h4>{ad.title}</h4>

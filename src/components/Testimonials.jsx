@@ -32,7 +32,7 @@ export default function Testimonials() {
           <p>Hear from the families and investors we've helped</p>
         </div>
         <div className="testimonials-carousel">
-          <div className="testimonial-card-active">
+          <div className="testimonial-card-active card-hover">
             <div className="testimonial-stars">{'★'.repeat(t.rating)}{'☆'.repeat(5 - t.rating)}</div>
             <p className="testimonial-content">"{t.content}"</p>
             <div className="testimonial-author">

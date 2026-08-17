@@ -1,14 +1,14 @@
-﻿import { useState, useEffect, useRef, useContext } from 'react';
+﻿import { useState, useEffect, useRef, useContext, memo, lazy, Suspense } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '../context/AuthCtx';
 import { CompareContext } from '../context/CompareContext';
 import { useLanguage } from '../context/LanguageCtx';
-import Lightbox from './Lightbox';
+const Lightbox = lazy(() => import('./Lightbox'));
 import SafeImage from './SafeImage';
 import API_URL from '../config';
 import { viewersFor } from '../utils/socialProof';
 
-export default function PropertyCard({ property }) {
+function PropertyCard({ property }) {
   const { token } = useAuth();
   const { t } = useLanguage();
   const { addToCompare, removeFromCompare, isInCompare } = useContext(CompareContext);
@@ -65,7 +65,7 @@ export default function PropertyCard({ property }) {
     <>
       <div
         ref={cardRef}
-        className={`property-card ${isVisible ? 'property-card-visible' : ''}`}
+        className={`property-card card-hover ${isVisible ? 'property-card-visible' : ''}`}
       >
         <div className="property-card-inner">
           <div className="property-card-image-wrap">
@@ -78,16 +78,16 @@ export default function PropertyCard({ property }) {
             {property.isPrivate === 1 && (
               <span className="property-badge badge-private">Private</span>
             )}
-            <button className={`favorite-btn ${isFavorited ? 'favorited' : ''}`} onClick={toggleFavorite} aria-label="Toggle favorite">
+            <button className={`favorite-btn ${isFavorited ? 'favorited' : ''}`} onClick={toggleFavorite} aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorited ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
             </button>
-            <button className="lightbox-trigger" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }} title="View larger">
+            <button className="lightbox-trigger" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }} aria-label="View larger image" title="View larger">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>
             </button>
             {property.video && (
-              <Link to={`/property/${propId}`} className="video-indicator" title="Virtual Tour Available">
+              <Link to={`/property/${propId}`} className="video-indicator" aria-label="Virtual Tour Available" title="Virtual Tour Available">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               </Link>
             )}
@@ -144,12 +144,16 @@ export default function PropertyCard({ property }) {
         </div>
       </div>
 
-      <Lightbox
-        isOpen={lightboxOpen}
-        images={property.images && property.images.length > 0 ? property.images : [property.image]}
-        imageAlt={propName}
-        onClose={() => setLightboxOpen(false)}
-      />
+      <Suspense fallback={null}>
+        <Lightbox
+          isOpen={lightboxOpen}
+          images={property.images && property.images.length > 0 ? property.images : [property.image]}
+          imageAlt={propName}
+          onClose={() => setLightboxOpen(false)}
+        />
+      </Suspense>
     </>
   );
 }
+
+export default memo(PropertyCard);

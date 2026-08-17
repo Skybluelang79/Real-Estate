@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 const SITE_NAME = 'Dream Homes';
 const DEFAULT_DESCRIPTION = 'Dream Homes — Your trusted partner in finding the perfect home. Browse luxury properties, apartments, and more.';
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200';
-const BASE_URL = 'https://dreamhomes.com';
+const BASE_URL = 'https://dreamhomes-realestate.netlify.app';
 
 function upsertMeta(attr, key, content) {
   let el = document.head.querySelector(`meta[${attr}="${key}"]`);
@@ -47,15 +47,29 @@ export default function Seo({ title, description, image, type = 'website', path 
     upsertLink('canonical', `${BASE_URL}${path}`);
     upsertLink('og:image:secure_url', ogImage);
 
+    const defaultJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: SITE_NAME,
+      url: BASE_URL,
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${BASE_URL}/properties?q={search_term_string}`,
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    };
+
     const existingScript = document.getElementById('seo-jsonld');
     if (existingScript) existingScript.remove();
-    if (jsonLd) {
-      const script = document.createElement('script');
-      script.type = 'application/ld+json';
-      script.id = 'seo-jsonld';
-      script.textContent = JSON.stringify(jsonLd);
-      document.head.appendChild(script);
-    }
+    const mergedJsonLd = { ...defaultJsonLd, ...jsonLd };
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'seo-jsonld';
+    script.textContent = JSON.stringify(mergedJsonLd);
+    document.head.appendChild(script);
 
     return () => {
       const s = document.getElementById('seo-jsonld');

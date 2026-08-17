@@ -6239,3 +6239,89 @@ body.dark-mode .native-ad-link {
 @media (max-width: 768px) {
   .native-ad-media { height: 180px; }
 }
+
+/* ==================== RESPONSIVE FIXES ==================== */
+@media (max-width: 768px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .detail-gallery {
+    position: static;
+  }
+
+  .detail-main-image {
+    height: 280px;
+  }
+
+  .detail-thumbs {
+    gap: 6px;
+  }
+
+  .detail-thumb {
+    width: 60px;
+    height: 45px;
+  }
+
+  .detail-stats-row {
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .detail-actions {
+    flex-direction: column;
+  }
+
+  .detail-actions .btn-primary,
+  .detail-actions .btn-ghost {
+    min-width: unset;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .form-row-2 {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .detail-price-tag {
+    font-size: 1.6rem;
+  }
+
+  .detail-title {
+    font-size: 1.3rem;
+  }
+
+  .detail-video-wrap {
+    padding-bottom: 66%;
+  }
+
+  .detail-similar .property-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .detail-main-image {
+    height: 220px;
+  }
+
+  .detail-stats-row {
+    gap: 8px;
+  }
+
+  .detail-stat-num {
+    font-size: 1.1rem;
+  }
+
+  .modal-content {
+    padding: 20px;
+    border-radius: var(--radius-lg);
+  }
+
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+}

@@ -2259,7 +2259,11 @@ export async function ensureDb() {
 
 export default app;
 
-const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
-if (isMain) {
-  startServer();
+try {
+  const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+  if (isMain) {
+    startServer();
+  }
+} catch {
+  // When bundled by serverless tooling, import.meta may be unavailable
 }

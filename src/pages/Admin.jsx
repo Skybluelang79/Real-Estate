@@ -1,15 +1,15 @@
-﻿import { useState, useEffect, useRef, useMemo } from 'react';
+﻿import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthCtx';
 import SafeImage from '../components/SafeImage';
 import Breadcrumbs from '../components/Breadcrumbs';
 import API_URL from '../config';
 import usePageTitle from '../hooks/usePageTitle';
-import DashboardPanel from '../components/admin/DashboardPanel';
-import LeadPipelinePanel from '../components/admin/LeadPipelinePanel';
-import OpenHousesPanel from '../components/admin/OpenHousesPanel';
-import NotificationsPanel from '../components/admin/NotificationsPanel';
-import UsersPanel from '../components/admin/UsersPanel';
+const DashboardPanel = lazy(() => import('../components/admin/DashboardPanel'));
+const LeadPipelinePanel = lazy(() => import('../components/admin/LeadPipelinePanel'));
+const OpenHousesPanel = lazy(() => import('../components/admin/OpenHousesPanel'));
+const NotificationsPanel = lazy(() => import('../components/admin/NotificationsPanel'));
+const UsersPanel = lazy(() => import('../components/admin/UsersPanel'));
 
 function AnimatedNum({ end, duration = 1500 }) {
   const [val, setVal] = useState(0);
@@ -663,27 +663,37 @@ export default function Admin() {
 
         {tab === 'dashboard' && (
           <div className="admin-tab-content admin-tab-visible">
-            <DashboardPanel token={token} properties={properties} />
+            <Suspense fallback={<div className="spinner" />}>
+              <DashboardPanel token={token} properties={properties} />
+            </Suspense>
           </div>
         )}
         {tab === 'leads' && (
           <div className="admin-tab-content admin-tab-visible">
-            <LeadPipelinePanel token={token} agents={agents} />
+            <Suspense fallback={<div className="spinner" />}>
+              <LeadPipelinePanel token={token} agents={agents} />
+            </Suspense>
           </div>
         )}
         {tab === 'open-houses' && (
           <div className="admin-tab-content admin-tab-visible">
-            <OpenHousesPanel token={token} properties={properties} />
+            <Suspense fallback={<div className="spinner" />}>
+              <OpenHousesPanel token={token} properties={properties} />
+            </Suspense>
           </div>
         )}
         {tab === 'notifications' && (
           <div className="admin-tab-content admin-tab-visible">
-            <NotificationsPanel token={token} />
+            <Suspense fallback={<div className="spinner" />}>
+              <NotificationsPanel token={token} />
+            </Suspense>
           </div>
         )}
         {tab === 'users' && (
           <div className="admin-tab-content admin-tab-visible">
-            <UsersPanel token={token} currentUser={user} />
+            <Suspense fallback={<div className="spinner" />}>
+              <UsersPanel token={token} currentUser={user} />
+            </Suspense>
           </div>
         )}
 

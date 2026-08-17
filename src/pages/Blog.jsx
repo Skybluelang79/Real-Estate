@@ -26,7 +26,7 @@ export default function Blog() {
         ) : (
           <div className="blog-grid">
             {posts.map(post => (
-              <article key={post.id} className="blog-card card">
+              <article key={post.id} className="blog-card card card-hover">
                 {post.image && <img src={`${API_URL}${post.image}`} alt={post.title} className="blog-image" loading="lazy" />}
                 <div className="blog-body">
                   <h2><Link to={`/blog/${post.id}`}>{post.title}</Link></h2>
