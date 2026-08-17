@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import API_URL from '../config';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 
 export default function NewsletterSignup({ compact = false }) {
   const { t } = useLanguage();

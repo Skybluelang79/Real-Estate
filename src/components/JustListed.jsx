@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { usePropertiesQuery } from '../api/properties';
 import PropertyCard from './PropertyCard';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 
 export default function JustListed() {
   const { t } = useLanguage();

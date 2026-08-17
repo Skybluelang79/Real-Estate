@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
 import { useParams, Link } from 'react-router';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthCtx';
 import { CompareContext } from '../context/CompareContext';
 import MortgageCalculator from '../components/MortgageCalculator';
 import Lightbox from '../components/Lightbox';
@@ -161,12 +161,15 @@ export default function PropertyDetail() {
     return () => { document.body.style.overflow = ''; };
   }, [tourOpen, offerOpen]);
 
-  const images = property?.images && property.images.length > 0 ? property.images : (property?.image ? [property.image] : []);
-  const floorPlanList = property?.floorPlans && property.floorPlans.length > 0
-    ? property.floorPlans
-    : (property?.floorPlan ? [property.floorPlan] : []);
-  const galleryImages = [...images, ...floorPlanList];
-  const hasFloorPlans = floorPlanList.length > 0;
+  const galleryImages = useMemo(() => {
+    const imgs = property?.images && property.images.length > 0 ? property.images : (property?.image ? [property.image] : []);
+    const fps = property?.floorPlans && property.floorPlans.length > 0
+      ? property.floorPlans
+      : (property?.floorPlan ? [property.floorPlan] : []);
+    return [...imgs, ...fps];
+  }, [property?.images, property?.floorPlans, property?.image, property?.floorPlan]);
+  const images = galleryImages.filter((img) => !img.includes('floorPlan') && !img.includes('floor-plan'));
+  const hasFloorPlans = galleryImages.length > images.length;
   const amenities = property?.amenities && Array.isArray(property.amenities) ? property.amenities : [];
 
   useEffect(() => {

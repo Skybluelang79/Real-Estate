@@ -1,6 +1,6 @@
 ﻿import { Link } from 'react-router';
 import NewsletterSignup from './NewsletterSignup';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 
 export default function Footer() {
   const { t } = useLanguage();

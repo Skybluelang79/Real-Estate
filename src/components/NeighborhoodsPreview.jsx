@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import SafeImage from './SafeImage';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 import neighborhoods from '../data/neighborhoods';
 
 export default function NeighborhoodsPreview() {

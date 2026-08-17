@@ -1,6 +1,7 @@
-import { createContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import CompareContext from './CompareCtx';
 
-export const CompareContext = createContext();
+export { default as CompareContext } from './CompareCtx';
 
 export function CompareProvider({ children }) {
   const [compareList, setCompareList] = useState(() => {

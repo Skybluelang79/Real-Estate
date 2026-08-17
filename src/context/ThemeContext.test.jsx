@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, renderHook, act } from '@testing-library/react';
-import { ThemeProvider, useTheme } from '../context/ThemeContext';
+import { ThemeProvider } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeCtx';
 
 function Consumer() {
   const { darkMode, toggleTheme } = useTheme();

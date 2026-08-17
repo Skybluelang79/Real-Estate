@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { usePropertiesQuery } from '../api/properties';
 import SafeImage from './SafeImage';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 
 function formatPrice(price) {
   const num = parseInt(String(price).replace(/[$,]/g, ''), 10);

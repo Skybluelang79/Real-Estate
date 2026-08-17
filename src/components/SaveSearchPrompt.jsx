@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import API_URL from '../config';
-import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthCtx';
+import { useLanguage } from '../context/LanguageCtx';
 
 const HIDE_KEY = 'dreamhomes_save_search_hidden';
 

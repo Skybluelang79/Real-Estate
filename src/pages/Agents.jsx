@@ -5,7 +5,7 @@ import SafeImage from '../components/SafeImage';
 import AgentRating from '../components/AgentRating';
 import Seo from '../components/Seo';
 import Breadcrumbs from '../components/Breadcrumbs';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 
 export default function Agents() {
   const { t } = useLanguage();

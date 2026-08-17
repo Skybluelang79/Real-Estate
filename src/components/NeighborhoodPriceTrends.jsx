@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 import neighborhoods from '../data/neighborhoods';
 
 function parseAvg(priceStr) {

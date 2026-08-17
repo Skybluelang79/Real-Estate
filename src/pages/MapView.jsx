@@ -169,7 +169,7 @@ export default function MapView() {
     placeholderData: keepPreviousData,
   });
 
-  const properties = data?.properties || [];
+  const properties = useMemo(() => data?.properties || [], [data]);
 
   useEffect(() => {
     if (!navigator.geolocation) return;

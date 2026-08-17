@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import API_URL from '../config';
 import SafeImage from './SafeImage';
 import AgentRating from './AgentRating';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 
 export default function AgentSpotlight() {
   const { t } = useLanguage();

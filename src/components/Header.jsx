@@ -1,8 +1,8 @@
 ﻿import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthCtx';
+import { useTheme } from '../context/ThemeCtx';
+import { useLanguage } from '../context/LanguageCtx';
 import MortgageCalculator from './MortgageCalculator';
 import API_URL from '../config';
 
@@ -53,7 +53,7 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const loadNotifications = () => {
+  const loadNotifications = useCallback(() => {
     if (!token || !user?.isAdmin) return;
     const headers = { Authorization: `Bearer ${token}` };
     fetch(`${API_URL}/api/notifications/unread-count`, { headers })
@@ -62,13 +62,13 @@ export default function Header() {
       fetch(`${API_URL}/api/notifications`, { headers })
         .then(r => r.json()).then(d => setNotifications(d.notifications || [])).catch(() => {});
     }
-  };
+  }, [token, user, notifOpen]);
 
   useEffect(() => {
     loadNotifications();
     const interval = setInterval(loadNotifications, 30000);
     return () => clearInterval(interval);
-  }, [token, notifOpen]);
+  }, [loadNotifications]);
 
   const markAllRead = async () => {
     if (!token) return;

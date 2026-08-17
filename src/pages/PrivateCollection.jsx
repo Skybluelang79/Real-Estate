@@ -1,11 +1,11 @@
 ﻿import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthCtx';
 import PropertyCard from '../components/PropertyCard';
 import Seo from '../components/Seo';
 import Breadcrumbs from '../components/Breadcrumbs';
 import API_URL from '../config';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 
 export default function PrivateCollection() {
   const { token } = useAuth();

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import API_URL from '../config';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 import { calculateMortgage } from '../utils/mortgage';
 
 export default function MortgageCalculator({ isOpen, onClose }) {

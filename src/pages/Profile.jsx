@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthCtx';
 import SafeImage from '../components/SafeImage';
 import Breadcrumbs from '../components/Breadcrumbs';
 import API_URL from '../config';

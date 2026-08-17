@@ -5,7 +5,14 @@ import fs from 'fs';
 import os from 'os';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
+// Safe file-URL resolution that works when bundled to CJS by serverless
+// tooling (where `import.meta.url` is unavailable/undefined).
+const __filename = (() => {
+  try {
+    if (import.meta && import.meta.url) return fileURLToPath(import.meta.url);
+  } catch { /* bundled to CJS */ }
+  return process.argv[1] || path.resolve('.');
+})();
 const __dirname = path.dirname(__filename);
 
 let DB_PATH = process.env.DB_PATH || path.join(__dirname, 'dreamhomes.db');

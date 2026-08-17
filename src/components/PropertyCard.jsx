@@ -1,8 +1,8 @@
 ﻿import { useState, useEffect, useRef, useContext } from 'react';
 import { Link } from 'react-router';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthCtx';
 import { CompareContext } from '../context/CompareContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 import Lightbox from './Lightbox';
 import SafeImage from './SafeImage';
 import API_URL from '../config';

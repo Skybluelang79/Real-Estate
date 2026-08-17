@@ -1,6 +1,6 @@
-﻿import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthCtx';
 import SafeImage from '../components/SafeImage';
 import Breadcrumbs from '../components/Breadcrumbs';
 import API_URL from '../config';
@@ -75,13 +75,13 @@ function TestimonialsPanel({ token }) {
   const [list, setList] = useState([]);
   const [form, setForm] = useState({ name: '', role: '', content: '', rating: 5, active: true });
   const [editing, setEditing] = useState(null);
-  const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+  const headers = useMemo(() => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }), [token]);
 
   const load = () => {
     fetch(`${API_URL}/api/testimonials/admin`, { headers })
       .then(r => r.json()).then(d => setList(d.testimonials || [])).catch(() => {});
   };
-  useEffect(load, [token]);
+  useEffect(load, [token, headers]);
 
   const save = async (e) => {
     e.preventDefault();
@@ -153,13 +153,13 @@ function BlogPanel({ token }) {
   const [posts, setPosts] = useState([]);
   const [form, setForm] = useState({ title: '', slug: '', content: '', excerpt: '', image: '', author: '', tags: '', published: true });
   const [editing, setEditing] = useState(null);
-  const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+  const headers = useMemo(() => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }), [token]);
 
   const load = () => {
     fetch(`${API_URL}/api/blog/admin`, { headers })
       .then(r => r.json()).then(d => setPosts(d.posts || [])).catch(() => {});
   };
-  useEffect(load, [token]);
+  useEffect(load, [token, headers]);
 
   const save = async (e) => {
     e.preventDefault();
@@ -261,7 +261,7 @@ function ChatPanel({ token }) {
 }
 
 export default function Admin() {
-  const { user, token } = useAuth();
+  const { user, token, loading } = useAuth();
   usePageTitle('Admin Dashboard');
   const navigate = useNavigate();
   const [tab, setTab] = useState('dashboard');
@@ -294,8 +294,9 @@ export default function Admin() {
   const statsRef = useRef(null);
 
   useEffect(() => {
+    if (loading) return;
     if (!user || !user.isAdmin) navigate('/');
-  }, [user, navigate]);
+  }, [user, navigate, loading]);
 
   useEffect(() => {
     const el = statsRef.current;

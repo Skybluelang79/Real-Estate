@@ -2,7 +2,7 @@
 import { Link } from 'react-router';
 import CanvasBackground from './CanvasBackground';
 import HomeSearch from './HomeSearch';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 
 const slides = [
   {

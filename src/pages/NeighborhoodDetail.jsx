@@ -7,7 +7,7 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import SafeImage from '../components/SafeImage';
 import NewsletterSignup from '../components/NewsletterSignup';
 import API_URL from '../config';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 
 export default function NeighborhoodDetail() {
   const { slug } = useParams();

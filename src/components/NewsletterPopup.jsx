@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import API_URL from '../config';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 
 const DISMISS_KEY = 'dreamhomes_newsletter_dismissed';
 

@@ -6,7 +6,7 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import SafeImage from '../components/SafeImage';
 import AgentRating from '../components/AgentRating';
 import API_URL from '../config';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 
 export default function AgentDetail() {
   const { id } = useParams();

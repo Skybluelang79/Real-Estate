@@ -16,7 +16,14 @@ import helmet from 'helmet';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { getDb, saveDb } from './db.js';
 
-const __filename = fileURLToPath(import.meta.url);
+// Safe file-URL resolution that works when bundled to CJS by serverless
+// tooling (where `import.meta.url` is unavailable/undefined).
+const __filename = (() => {
+  try {
+    if (import.meta && import.meta.url) return fileURLToPath(import.meta.url);
+  } catch { /* bundled to CJS */ }
+  return process.argv[1] || path.resolve('.');
+})();
 const __dirname = path.dirname(__filename);
 
 const app = express();

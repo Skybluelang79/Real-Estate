@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
-import { LanguageProvider, useLanguage } from '../context/LanguageContext';
+import { LanguageProvider } from '../context/LanguageContext';
+import { useLanguage } from '../context/LanguageCtx';
 import translations from '../i18n/translations';
 
 function Consumer() {

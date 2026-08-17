@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthCtx';
 import usePageTitle from '../hooks/usePageTitle';
 
 export default function SignUp() {

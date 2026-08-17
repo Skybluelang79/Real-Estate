@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import LanguageContext from './LanguageCtx';
 import translations from '../i18n/translations';
-
-export const LanguageContext = createContext(null);
 
 const LANG_KEY = 'dreamhomes-lang';
 
@@ -37,12 +36,4 @@ export function LanguageProvider({ children }) {
       {children}
     </LanguageContext.Provider>
   );
-}
-
-export function useLanguage() {
-  const ctx = useContext(LanguageContext);
-  if (!ctx) {
-    return { lang: 'en', setLang: () => {}, t: (key) => key };
-  }
-  return ctx;
 }
