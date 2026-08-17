@@ -33,7 +33,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dream-homes-secret-2026';
 if (!process.env.JWT_SECRET) {
   console.warn('WARNING: JWT_SECRET is not set. Using an insecure default — set JWT_SECRET in production.');
 }
-const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5177';
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5177,https://dreamhomes-realestate.netlify.app';
 
 let uploadsDir = path.join(__dirname, 'uploads');
 try {
