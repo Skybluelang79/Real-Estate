@@ -39,4 +39,12 @@ export const FALLBACK_ADS = [
     link: '/contact',
     cta: 'Speak With Us',
   },
+  {
+    id: 'fb-private',
+    title: 'The Private Collection',
+    description: 'Exclusive off-market residences available by appointment only for qualified buyers.',
+    image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200',
+    link: '/private',
+    cta: 'Explore Listings',
+  },
 ];

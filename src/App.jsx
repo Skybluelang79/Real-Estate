@@ -23,6 +23,9 @@ import AgentSpotlight from './components/AgentSpotlight'
 import BlogPreview from './components/BlogPreview'
 import NeighborhoodPriceTrends from './components/NeighborhoodPriceTrends'
 import NewsletterPopup from './components/NewsletterPopup'
+import TopBannerAd from './components/TopBannerAd'
+import StickySidebarAd from './components/StickySidebarAd'
+import GoogleAdSlot from './components/GoogleAdSlot'
 import Reveal from './components/Reveal'
 import SaveSearchPrompt from './components/SaveSearchPrompt'
 import CompareFloatingBar from './components/CompareFloatingBar'
@@ -93,10 +96,12 @@ function Home() {
 
   return (
     <>
+      <TopBannerAd />
       <Hero properties={properties} />
       <PressStrip />
       <SaveSearchPrompt />
       <Reveal><StatsSection /></Reveal>
+      <GoogleAdSlot slot="1234567890" className="home-ad-top" />
       <Reveal><JustListed /></Reveal>
       <Reveal><RecentlyViewed /></Reveal>
       <section className="section featured-section">
@@ -141,6 +146,7 @@ function Home() {
       </section>
       <Reveal><Advertisements variant="showcase" /></Reveal>
       <Reveal><ServicesSection /></Reveal>
+      <GoogleAdSlot slot="1234567891" className="home-ad-mid" />
       <Reveal><HomeTools /></Reveal>
       <Reveal><OpenHousesSection /></Reveal>
       <Reveal><NeighborhoodPriceTrends /></Reveal>
@@ -150,12 +156,14 @@ function Home() {
         <MiniMap />
       </Suspense>
       <Reveal><Testimonials /></Reveal>
+      <GoogleAdSlot slot="1234567892" className="home-ad-bottom" />
       <Reveal><BlogPreview /></Reveal>
       <Reveal><LifestyleGallery /></Reveal>
       <Reveal><CtaBanner /></Reveal>
       <Advertisements />
       <Sponsors />
       <NewsletterPopup />
+      <StickySidebarAd />
     </>
   );
 }

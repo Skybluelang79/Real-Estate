@@ -6325,3 +6325,268 @@ body.dark-mode .native-ad-link {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================
+   TOP BANNER AD
+   ============================================ */
+.top-banner-ad {
+  width: 100%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  position: relative;
+  overflow: hidden;
+  z-index: 50;
+}
+
+.top-banner-ad-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.top-banner-ad-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #fff;
+  padding: 16px 48px 16px 24px;
+  min-height: 80px;
+  position: relative;
+}
+
+.top-banner-ad-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.3;
+  mask-image: linear-gradient(to left, rgba(0,0,0,0.6), transparent);
+  -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,0.6), transparent);
+}
+
+.top-banner-ad-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.top-banner-ad-content h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.top-banner-ad-content p {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin: 0;
+}
+
+.top-banner-ad-cta {
+  background: var(--primary, #c9a84c);
+  color: #000;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  transition: transform 0.2s;
+}
+
+.top-banner-ad-link:hover .top-banner-ad-cta {
+  transform: scale(1.05);
+}
+
+.top-banner-ad-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: background 0.2s;
+}
+
+.top-banner-ad-close:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* ============================================
+   STICKY SIDEBAR AD
+   ============================================ */
+.sticky-sidebar-ad {
+  position: fixed;
+  right: 16px;
+  bottom: 80px;
+  width: 200px;
+  z-index: 90;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  animation: slideInRight 0.4s ease-out;
+}
+
+.sticky-sidebar-ad-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0,0,0,0.5);
+  border: none;
+  color: #fff;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: background 0.2s;
+}
+
+.sticky-sidebar-ad-close:hover {
+  background: rgba(0,0,0,0.8);
+}
+
+.sticky-sidebar-ad-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sticky-sidebar-ad-link img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.sticky-sidebar-ad-body {
+  padding: 12px;
+}
+
+.sticky-sidebar-ad-body h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 6px 0 4px;
+  line-height: 1.3;
+}
+
+.sticky-sidebar-ad-body p {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin: 0 0 8px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sticky-sidebar-ad-cta {
+  display: inline-block;
+  background: var(--primary, #c9a84c);
+  color: #000;
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+body.dark-mode .sticky-sidebar-ad {
+  background: var(--bg-secondary, #1e1e2e);
+  border-color: var(--border, #333);
+}
+
+@media (max-width: 1280px) {
+  .sticky-sidebar-ad { display: none; }
+}
+
+/* ============================================
+   GOOGLE AD SENSE PLACEHOLDER
+   ============================================ */
+.google-ad-slot,
+.google-ad-placeholder {
+  width: 100%;
+  margin: 24px auto;
+  max-width: 1200px;
+}
+
+.google-ad-placeholder {
+  background: var(--bg-secondary, #f8f9fa);
+  border: 2px dashed var(--border, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.google-ad-placeholder-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  min-height: 100px;
+}
+
+.google-ad-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary, #999);
+  margin-bottom: 8px;
+}
+
+.google-ad-placeholder-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary, #999);
+  font-size: 0.85rem;
+}
+
+body.dark-mode .google-ad-placeholder {
+  background: var(--bg-secondary, #1a1a2e);
+  border-color: var(--border, #333);
+}
+
+/* Ad placement spacing on homepage */
+.home-ad-top,
+.home-ad-mid,
+.home-ad-bottom {
+  padding: 0 24px;
+}
+
+@media (max-width: 768px) {
+  .top-banner-ad-link {
+    padding: 12px 40px 12px 16px;
+  }
+  .top-banner-ad-content h3 {
+    font-size: 0.95rem;
+  }
+  .top-banner-ad-content p {
+    display: none;
+  }
+  .top-banner-ad-bg {
+    width: 60%;
+  }
+  .sticky-sidebar-ad {
+    right: 8px;
+    width: 170px;
+    bottom: 70px;
+  }
+}
