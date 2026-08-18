@@ -61,6 +61,10 @@ export default function Lightbox({ isOpen, images, currentIndex: externalIndex, 
       onClick={onClose}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image lightbox viewer"
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
     >
       <button className="lightbox-close" onClick={onClose}>×</button>
 

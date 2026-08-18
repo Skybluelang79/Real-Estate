@@ -97,11 +97,13 @@ export default function MortgageCalculator({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
+  const handleKeyDown = (e) => { if (e.key === 'Escape') onClose(); };
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content mortgage-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} onKeyDown={handleKeyDown}>
+      <div className="modal-content mortgage-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="mc-title">
         <button className="modal-close" onClick={onClose} aria-label="Close mortgage calculator">×</button>
-        <h2>Mortgage Calculator</h2>
+        <h2 id="mc-title">Mortgage Calculator</h2>
         <div className="mortgage-form">
           <div className="mortgage-field">
             <label htmlFor="mortgage-home-price">Home Price ($)</label>

@@ -52,10 +52,10 @@ export default function NewsletterPopup() {
   if (!visible) return null;
 
   return (
-    <div className="newsletter-popup-overlay" onClick={dismiss}>
-      <div className="newsletter-popup" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+    <div className="newsletter-popup-overlay" onClick={dismiss} onKeyDown={(e) => { if (e.key === 'Escape') dismiss(); }}>
+      <div className="newsletter-popup" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="newsletter-title">
         <button className="modal-close" onClick={dismiss} aria-label="Close">×</button>
-        <h3>{t('newsletter.popupTitle')}</h3>
+        <h3 id="newsletter-title">{t('newsletter.popupTitle')}</h3>
         <p>{t('newsletter.popupDesc')}</p>
         <form className="newsletter-form" onSubmit={submit}>
           <input
@@ -63,6 +63,7 @@ export default function NewsletterPopup() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={t('newsletter.placeholder')}
+            aria-label="Email address"
             required
           />
           <button type="submit" className="btn-primary">{t('newsletter.subscribe')}</button>

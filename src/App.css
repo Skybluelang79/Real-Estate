@@ -19,7 +19,7 @@
   --text: #3D3529;
   --text-secondary: #6B6258;
   --text-heading: #1A1714;
-  --text-muted: #9C948A;
+  --text-muted: #7A746B;
 
   --border: #E5DDD4;
   --border-light: #F0EBE5;
@@ -60,7 +60,7 @@ body.dark {
   --text: #C8C2BC;
   --text-secondary: #9C948A;
   --text-heading: #EDE8E2;
-  --text-muted: #6B6258;
+  --text-muted: #8A8178;
 
   --border: #2D2926;
   --border-light: #1A1816;
@@ -365,6 +365,11 @@ img {
   color: var(--text);
   width: 130px;
   outline: none;
+}
+.header-search input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 .header-search input::placeholder {
@@ -1096,6 +1101,7 @@ img {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  overflow: hidden;
 }
 
 .property-price {
@@ -1114,6 +1120,9 @@ img {
   font-weight: 600;
   color: var(--text-heading);
   line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .property-location {
@@ -2555,6 +2564,7 @@ img {
 .tool-form select:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
 }
 
 .tool-results {
@@ -2979,6 +2989,7 @@ img {
 .newsletter-form input:focus {
   outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
 }
 
 .newsletter-status {

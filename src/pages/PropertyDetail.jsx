@@ -781,9 +781,9 @@ export default function PropertyDetail() {
 
       {tourOpen && (
         <div className="modal-overlay" onClick={() => setTourOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="tour-title" onKeyDown={(e) => { if (e.key === 'Escape') setTourOpen(false); }}>
             <button className="modal-close" onClick={() => setTourOpen(false)} aria-label="Close tour form">×</button>
-            <h2>Schedule a Tour</h2>
+            <h2 id="tour-title">Schedule a Tour</h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>{tourProperty}</p>
             <form onSubmit={scheduleTour} className="tour-form">
               <div className="form-row-2">
@@ -807,9 +807,9 @@ export default function PropertyDetail() {
 
       {offerOpen && (
         <div className="modal-overlay" onClick={() => setOfferOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="offer-title" onKeyDown={(e) => { if (e.key === 'Escape') setOfferOpen(false); }}>
             <button className="modal-close" onClick={() => setOfferOpen(false)} aria-label="Close offer form">×</button>
-            <h2>Make an Offer</h2>
+            <h2 id="offer-title">Make an Offer</h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>{displayName} — {priceDisplay}</p>
             <form onSubmit={submitOffer} className="tour-form">
               <div className="form-row-2">

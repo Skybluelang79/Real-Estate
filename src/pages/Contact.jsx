@@ -60,24 +60,24 @@ export default function Contact() {
 
             <form onSubmit={handleSubmit} className="contact-form">
               <div className="form-group">
-                <label>Name</label>
-                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Your full name" />
+                <label htmlFor="contact-name">Name</label>
+                <input id="contact-name" type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Your full name" />
                 {errors.name && <span className="form-error">{errors.name}</span>}
               </div>
               <div className="form-row-2">
                 <div className="form-group">
-                  <label>Email</label>
-                  <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="your@email.com" />
+                  <label htmlFor="contact-email">Email</label>
+                  <input id="contact-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="your@email.com" />
                   {errors.email && <span className="form-error">{errors.email}</span>}
                 </div>
                 <div className="form-group">
-                  <label>Phone</label>
-                  <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(555) 123-4567" />
+                  <label htmlFor="contact-phone">Phone</label>
+                  <input id="contact-phone" type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(555) 123-4567" />
                 </div>
               </div>
               <div className="form-group">
-                <label>Subject</label>
-                <select value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })}>
+                <label htmlFor="contact-subject">Subject</label>
+                <select id="contact-subject" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })}>
                   <option>General Inquiry</option>
                   <option>Property Question</option>
                   <option>Schedule Viewing</option>
@@ -86,8 +86,8 @@ export default function Contact() {
                 </select>
               </div>
               <div className="form-group">
-                <label>Message</label>
-                <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} rows={5} placeholder="Tell us how we can help..." maxLength={500} />
+                <label htmlFor="contact-message">Message</label>
+                <textarea id="contact-message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} rows={5} placeholder="Tell us how we can help..." maxLength={500} />
                 <span className="char-counter">{form.message.length}/500</span>
                 {errors.message && <span className="form-error">{errors.message}</span>}
               </div>
@@ -111,7 +111,7 @@ export default function Contact() {
           <div className="faq-list">
             {faqs.map((faq, i) => (
               <div key={i} className={`faq-item ${openFaq === i ? 'faq-open' : ''}`}>
-                <button className="faq-question" onClick={() => setOpenFaq(openFaq === i ? -1 : i)}>
+                <button className="faq-question" onClick={() => setOpenFaq(openFaq === i ? -1 : i)} aria-expanded={openFaq === i}>
                   <span>{faq.q}</span>
                   <span className="faq-arrow">{openFaq === i ? '−' : '+'}</span>
                 </button>

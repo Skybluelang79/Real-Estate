@@ -75,7 +75,7 @@ export default function ChatWidget({ user }) {
         {open ? '✕' : '💬'}
       </button>
       {open && (
-        <div className="chat-widget" role="dialog" aria-label="Live chat">
+        <div className="chat-widget" role="dialog" aria-modal="true" aria-label="Live chat" onKeyDown={(e) => { if (e.key === 'Escape') setOpen(false); }}>
           <div className="chat-header">
             <strong>Live Chat</strong>
             <span className={`chat-status ${isOnline ? 'online' : 'offline'}`}>
