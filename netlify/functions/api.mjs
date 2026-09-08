@@ -3,17 +3,16 @@ import app, { ensureDb } from '../../server/index.js';
 
 const serverlessHandler = serverless(app);
 
-const FUNCTION_PREFIX = '/.netlify/functions/api';
-
 export async function handler(event) {
   await ensureDb();
   let path = event.path || '/';
-  if (path.startsWith(FUNCTION_PREFIX)) {
-    const rest = path.slice(FUNCTION_PREFIX.length);
-    path = `/api${rest}`;
-  }
-  if (!path.startsWith('/api')) {
-    path = `/api${path}`;
+  // If Netlify passes the full function URL, strip it so only the API route remains.
+  path = path.replace(/^\/\.netlify\/functions\/api(?=\/|$)/, '');
+  // Collapse any duplicated '/api' prefix (e.g. '/api/api/auth/login').
+  path = path.replace(/^(\/api)+(?=\/)/, '/api');
+  // Ensure the route starts with exactly one '/api'.
+  if (!/^\/api(\/|$)/.test(path)) {
+    path = path === '/' || path === '' ? '/api' : `/api${path}`;
   }
   event.path = path;
   return serverlessHandler(event);
