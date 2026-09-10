@@ -18,6 +18,7 @@ dist-ssr
 # Backend secrets & data
 .env
 .env.*
+!.env.example
 server/.env
 server/dreamhomes.db
 server/uploads

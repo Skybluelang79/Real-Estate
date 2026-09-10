@@ -65,11 +65,6 @@ export default function SignIn() {
             </button>
           </form>
 
-          <div className="auth-hint">
-            <span>Demo: </span>
-            <code>admin@dreamhomes.com</code> / <code>admin123</code>
-          </div>
-
           <p className="auth-switch">Don't have an account? <Link to="/signup">Sign up</Link></p>
         </div>
       </div>
