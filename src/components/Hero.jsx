@@ -89,6 +89,19 @@ export default function Hero({ properties = [] }) {
 
       <div className="hero-content">
         <div className="hero-content-inner">
+          <div className="hero-logo-wrap">
+            <svg className="hero-logo-icon" width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 2L2 12v18h10V20h8v10h10V12L16 2z" fill="url(#hero-logo-grad)" />
+              <path d="M16 6L6 13v15h4V18h12v10h4V13l-10-7z" fill="#1A1714" />
+              <defs>
+                <linearGradient id="hero-logo-grad" x1="2" y1="2" x2="30" y2="30">
+                  <stop offset="0%" stopColor="#C9A84C" />
+                  <stop offset="100%" stopColor="#A8882E" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <span className="hero-logo-text">Dream Homes</span>
+          </div>
           <h1 className="hero-title">{heroSlides[current].title}</h1>
           <p className="hero-subtitle">{heroSlides[current].subtitle}</p>
           <div className="hero-accent-line" />

@@ -1,7 +1,7 @@
 const translations = {
   en: {
     skipToContent: 'Skip to content',
-    nav: { home: 'Home', properties: 'Properties', agents: 'Agents', blog: 'Blog', about: 'About', contact: 'Contact', neighborhoods: 'Neighborhoods', private: 'Private Collection' },
+    nav: { home: 'Home', properties: 'Properties', agents: 'Agents', blog: 'Blog', about: 'About', contact: 'Contact', neighborhoods: 'Neighborhoods', private: 'Private Collection', resources: 'Resources', financing: 'Financing', valuation: 'Home Valuation', moving: 'Moving Services' },
     header: { searchPlaceholder: 'Search properties...', calculator: 'Calculator', mapView: 'Map View', profile: 'Profile', admin: 'Admin Dashboard', logout: 'Logout', signIn: 'Sign In', signUp: 'Sign Up', menu: 'Menu' },
     hero: [
       { title: 'Where Elegance Meets Comfort', subtitle: 'Discover a curated collection of the world\'s most exceptional properties' },
@@ -219,7 +219,7 @@ const translations = {
   },
 
   zh: {
-    nav: { home: '首页', properties: '房产', agents: '经纪人', blog: '博客', about: '关于我们', contact: '联系我们', neighborhoods: '社区', private: '私享收藏' },
+    nav: { home: '首页', properties: '房产', agents: '经纪人', blog: '博客', about: '关于我们', contact: '联系我们', neighborhoods: '社区', private: '私享收藏', resources: '资源', financing: '购房贷款', valuation: '房屋估值', moving: '搬家服务' },
     header: { searchPlaceholder: '搜索房产...', calculator: '计算器', mapView: '地图视图', profile: '个人中心', admin: '管理后台', logout: '退出登录', signIn: '登录', signUp: '注册', menu: '菜单' },
     skipToContent: '跳到主要内容',
     hero: [
@@ -438,7 +438,7 @@ const translations = {
   },
 
   es: {
-    nav: { home: 'Inicio', properties: 'Propiedades', agents: 'Agentes', blog: 'Blog', about: 'Nosotros', contact: 'Contacto', neighborhoods: 'Barrios', private: 'Colección Privada' },
+    nav: { home: 'Inicio', properties: 'Propiedades', agents: 'Agentes', blog: 'Blog', about: 'Nosotros', contact: 'Contacto', neighborhoods: 'Barrios', private: 'Colección Privada', resources: 'Recursos', financing: 'Financiamiento', valuation: 'Valuación', moving: 'Mudanza' },
     header: { searchPlaceholder: 'Buscar propiedades...', calculator: 'Calculadora', mapView: 'Vista de mapa', profile: 'Perfil', admin: 'Panel de administración', logout: 'Cerrar sesión', signIn: 'Iniciar sesión', signUp: 'Registrarse', menu: 'Menú' },
     skipToContent: 'Saltar al contenido',
     hero: [

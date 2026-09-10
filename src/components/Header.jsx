@@ -19,6 +19,8 @@ export default function Header() {
   const [calcOpen, setCalcOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [resourcesOpen, setResourcesOpen] = useState(false);
+  const resourcesRef = useRef(null);
   const [notifications, setNotifications] = useState([]);
   const [unread, setUnread] = useState(0);
   const dropdownRef = useRef(null);
@@ -47,6 +49,9 @@ export default function Header() {
       }
       if (notifRef.current && !notifRef.current.contains(e.target)) {
         setNotifOpen(false);
+      }
+      if (resourcesRef.current && !resourcesRef.current.contains(e.target)) {
+        setResourcesOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
@@ -117,6 +122,40 @@ export default function Header() {
             <Link to="/agents" className="nav-link" onClick={() => setMenuOpen(false)}>{t('nav.agents')}</Link>
             <Link to="/neighborhoods" className="nav-link" onClick={() => setMenuOpen(false)}>{t('nav.neighborhoods')}</Link>
             <Link to="/private" className="nav-link nav-link-gold" onClick={() => setMenuOpen(false)}>{t('nav.private')}</Link>
+            <div className="nav-dropdown" ref={resourcesRef}>
+              <button className="nav-link nav-dropdown-trigger" onClick={() => setResourcesOpen(!resourcesOpen)} aria-expanded={resourcesOpen}>
+                {t('nav.resources')}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              {resourcesOpen && (
+                <div className="nav-dropdown-menu">
+                  <Link to="/financing" className="nav-dropdown-item" onClick={() => { setResourcesOpen(false); setMenuOpen(false); }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    {t('nav.financing')}
+                  </Link>
+                  <Link to="/valuation" className="nav-dropdown-item" onClick={() => { setResourcesOpen(false); setMenuOpen(false); }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 22V7l9-5 9 5v15"/><path d="M9 22V12h6v10"/></svg>
+                    {t('nav.valuation')}
+                  </Link>
+                  <Link to="/moving" className="nav-dropdown-item" onClick={() => { setResourcesOpen(false); setMenuOpen(false); }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                    {t('nav.moving')}
+                  </Link>
+                  <Link to="/agents" className="nav-dropdown-item" onClick={() => { setResourcesOpen(false); setMenuOpen(false); }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    {t('nav.agents')}
+                  </Link>
+                  <Link to="/neighborhoods" className="nav-dropdown-item" onClick={() => { setResourcesOpen(false); setMenuOpen(false); }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {t('nav.neighborhoods')}
+                  </Link>
+                  <Link to="/private" className="nav-dropdown-item nav-dropdown-gold" onClick={() => { setResourcesOpen(false); setMenuOpen(false); }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z"/></svg>
+                    {t('nav.private')}
+                  </Link>
+                </div>
+              )}
+            </div>
             <Link to="/blog" className="nav-link" onClick={() => setMenuOpen(false)}>{t('nav.blog')}</Link>
             <Link to="/about" className="nav-link" onClick={() => setMenuOpen(false)}>{t('nav.about')}</Link>
             <Link to="/contact" className="nav-link" onClick={() => setMenuOpen(false)}>{t('nav.contact')}</Link>
