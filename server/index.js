@@ -14,7 +14,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import nodemailer from 'nodemailer';
 import helmet from 'helmet';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import { getDb, saveDb } from './db.js';
+import { getDb, saveDb, syncToPostgres } from './db.js';
 
 // Safe file-URL resolution that works when bundled to CJS by serverless
 // tooling (where `import.meta.url` is unavailable/undefined).
@@ -2256,6 +2256,7 @@ async function startServer() {
   const alertMinutes = Math.max(5, parseInt(process.env.ALERT_INTERVAL_MINUTES) || 60);
   setTimeout(() => runSavedSearchAlerts(), 30 * 1000);
   setInterval(() => runSavedSearchAlerts(), alertMinutes * 60 * 1000);
+  setInterval(() => syncToPostgres(), 5 * 60 * 1000);
   console.log(`[Saved Search Alerts] Scheduled to run every ${alertMinutes} minutes`);
 }
 

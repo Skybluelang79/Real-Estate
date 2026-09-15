@@ -13,6 +13,10 @@ services:
         value: https://dreamhomes-realestate.netlify.app,http://localhost:5177
       - key: JWT_SECRET
         generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dreamhomes-db
+          property: connectionString
       - key: SMTP_HOST
         value: smtp.ethereal.email
       - key: SMTP_PORT
@@ -21,3 +25,8 @@ services:
         value: test@ethereal.email
       - key: SMTP_PASS
         value: testpassword
+
+databases:
+  - name: dreamhomes-db
+    plan: free
+    databaseName: dreamhomes

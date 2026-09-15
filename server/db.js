@@ -22,9 +22,77 @@ try {
   DB_PATH = path.join(os.tmpdir(), 'dreamhomes.db');
 }
 let db = null;
+let SQL = null;
+let pgPool = null;
+const DATABASE_URL = (process.env.DATABASE_URL || '').trim();
+
+async function getPgPool() {
+  if (pgPool) return pgPool;
+  if (!DATABASE_URL) return null;
+  try {
+    const { default: pg } = await import('pg');
+    pgPool = new pg.Pool({
+      connectionString: DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      max: 3,
+      idleTimeoutMillis: 30000,
+    });
+    await pgPool.query(`
+      CREATE TABLE IF NOT EXISTS db_snapshot (
+        id TEXT PRIMARY KEY DEFAULT 'main',
+        data BYTEA NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    console.log('[DB] Postgres upstream connected');
+    return pgPool;
+  } catch (err) {
+    console.warn('[DB] Postgres connection failed, using file fallback:', err.message);
+    pgPool = null;
+    return null;
+  }
+}
+
+async function loadFromPostgres() {
+  const pool = await getPgPool();
+  if (!pool) return null;
+  try {
+    const { rows } = await pool.query("SELECT data FROM db_snapshot WHERE id = 'main'");
+    if (rows[0] && rows[0].data) {
+      console.log('[DB] Loaded snapshot from Postgres');
+      return rows[0].data;
+    }
+  } catch (err) {
+    console.warn('[DB] Failed to load from Postgres:', err.message);
+  }
+  return null;
+}
+
+async function saveToPostgres(buffer) {
+  const pool = await getPgPool();
+  if (!pool) return;
+  try {
+    await pool.query(
+      "INSERT INTO db_snapshot (id, data, updated_at) VALUES ('main', $1, NOW()) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()",
+      [buffer]
+    );
+  } catch (err) {
+    console.warn('[DB] Failed to save to Postgres:', err.message);
+  }
+}
 
 async function initializeDatabase() {
-  const SQL = await initSqlJs();
+  SQL = await initSqlJs();
+
+  let pgBuffer = null;
+  try {
+    pgBuffer = await loadFromPostgres();
+  } catch { /* no pool configured or error */ }
+
+  if (pgBuffer) {
+    db = new SQL.Database(pgBuffer);
+    return db;
+  }
 
   if (fs.existsSync(DB_PATH)) {
     const fileBuffer = fs.readFileSync(DB_PATH);
@@ -669,6 +737,9 @@ function saveDb() {
     const tmpPath = `${DB_PATH}.tmp`;
     fs.writeFileSync(tmpPath, buffer);
     fs.renameSync(tmpPath, DB_PATH);
+    if (DATABASE_URL) {
+      saveToPostgres(buffer).catch(() => {});
+    }
   } catch (err) {
     console.warn('saveDb: could not persist database:', err.message);
   }
@@ -679,6 +750,14 @@ export async function getDb() {
     await initializeDatabase();
   }
   return db;
+}
+
+export async function syncToPostgres() {
+  if (!db || !DATABASE_URL) return;
+  try {
+    const data = db.export();
+    await saveToPostgres(Buffer.from(data));
+  } catch { /* non-critical */ }
 }
 
 export { saveDb };
