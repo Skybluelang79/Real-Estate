@@ -1,15 +1,13 @@
 import { useState } from 'react';
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '';
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '+18005554663';
 const DEFAULT_MESSAGE = 'Hi! I\'m interested in Dream Homes properties.';
 
 export default function WhatsAppButton() {
   const [tooltip, setTooltip] = useState(false);
 
-  if (!WHATSAPP_NUMBER) return null;
-
   const message = encodeURIComponent(DEFAULT_MESSAGE);
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+  const url = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^\d]/g, '')}?text=${message}`;
 
   return (
     <div
