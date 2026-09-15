@@ -384,10 +384,8 @@ async function seedData() {
 
   if (!count) {
     const adminHash = bcrypt.hashSync('admin123', 10);
-    const userHash = bcrypt.hashSync('user123', 10);
 
     db.run("INSERT INTO users (name, email, password, isAdmin) VALUES (?, ?, ?, ?)", ['Admin', 'admin@dreamhomes.com', adminHash, 1]);
-    db.run("INSERT INTO users (name, email, password, isAdmin) VALUES (?, ?, ?, ?)", ['Demo User', 'user@dreamhomes.com', userHash, 0]);
 
     const properties = [
       {

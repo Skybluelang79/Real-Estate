@@ -79,7 +79,16 @@ const upload = multer({
 });
 
 const corsOrigins = CORS_ORIGIN.split(',').map(s => s.trim());
-app.use(cors({ origin: corsOrigins, credentials: true }));
+const isLocalDevOrigin = (origin) => /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin || '');
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || corsOrigins.includes(origin) || (!IS_PROD && isLocalDevOrigin(origin))) {
+      return cb(null, true);
+    }
+    return cb(new Error(`CORS: origin ${origin} is not allowed`));
+  },
+  credentials: true,
+}));
 app.use(helmet({
   contentSecurityPolicy: IS_PROD ? {
     useDefaults: true,
