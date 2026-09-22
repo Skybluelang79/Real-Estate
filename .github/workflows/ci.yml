@@ -16,7 +16,9 @@ jobs:
           # >= 20.18.1 required by undici (pulled in by jsdom/vitest); older
           # 20.x fails tests with "webidl.util.markAsUncloneable is not a function".
           node-version: 20.18.1
-      - run: npm install
+      # npm ci installs strictly from the lockfile; `npm install` hits
+      # npm/cli#4828 and can skip oxlint's linux-x64 native binding in CI.
+      - run: npm ci
       - run: npm run lint
       - run: npm run test -- --reporter=verbose
         timeout-minutes: 2
