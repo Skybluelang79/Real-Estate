@@ -11,9 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+- uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # >= 20.18.1 required by undici (pulled in by jsdom/vitest); older
+          # 20.x fails tests with "webidl.util.markAsUncloneable is not a function".
+          node-version: 20.18.1
       - run: npm install
       - run: npm run lint
       - run: npm run test -- --reporter=verbose
@@ -27,7 +29,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.18.1
       - run: npm install -g netlify-cli
       # --build runs the netlify.toml build (frontend) AND bundles the
       # serverless functions, so the /api backend ships with the site.
