@@ -33,7 +33,6 @@ import BackToTop from './components/BackToTop'
 import QuickContact from './components/QuickContact'
 import Breadcrumbs from './components/Breadcrumbs'
 import ChatWidget from './components/ChatWidget'
-import WhatsAppButton from './components/WhatsAppButton'
 import Seo from './components/Seo'
 import { useState, useEffect } from 'react'
 import { useAuth } from './context/AuthCtx'
@@ -414,7 +413,6 @@ function App() {
       <Header />
       <CompareFloatingBar />
       <ChatWidget user={user} />
-      <WhatsAppButton />
       <QuickContact />
       <main id="main-content" className="main">
         <Suspense fallback={<div className="page-loader"><div className="spinner" /></div>}>

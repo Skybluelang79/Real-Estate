@@ -21,45 +21,23 @@ describe('ChatWidget', () => {
     Element.prototype.scrollIntoView = vi.fn();
   });
 
-  it('renders the chat toggle button', () => {
+  it('renders the chat toggle button as close when open', () => {
     render(<ChatWidget />);
-    expect(screen.getByRole('button', { name: /open chat/i })).toBeInTheDocument();
-  });
-
-  it('shows chat emoji by default', () => {
-    render(<ChatWidget />);
-    expect(screen.getByText('💬')).toBeInTheDocument();
-  });
-
-  it('opens chat dialog on toggle click', () => {
-    render(<ChatWidget />);
-    act(() => {
-      screen.getByRole('button', { name: /open chat/i }).click();
-    });
-    expect(screen.getByRole('dialog', { name: /live chat/i })).toBeInTheDocument();
-  });
-
-  it('shows close button label when open', () => {
-    render(<ChatWidget />);
-    act(() => {
-      screen.getByRole('button', { name: /open chat/i }).click();
-    });
     expect(screen.getByRole('button', { name: /close chat/i })).toBeInTheDocument();
   });
 
-  it('shows X icon when open', () => {
+  it('shows X icon when open by default', () => {
     render(<ChatWidget />);
-    act(() => {
-      screen.getByRole('button', { name: /open chat/i }).click();
-    });
     expect(screen.getByText('✕')).toBeInTheDocument();
   });
 
-  it('closes chat on second click', () => {
+  it('shows chat dialog by default', () => {
     render(<ChatWidget />);
-    act(() => {
-      screen.getByRole('button', { name: /open chat/i }).click();
-    });
+    expect(screen.getByRole('dialog', { name: /live chat/i })).toBeInTheDocument();
+  });
+
+  it('closes chat on toggle click', () => {
+    render(<ChatWidget />);
     expect(screen.getByRole('dialog', { name: /live chat/i })).toBeInTheDocument();
 
     act(() => {
@@ -68,39 +46,43 @@ describe('ChatWidget', () => {
     expect(screen.queryByRole('dialog', { name: /live chat/i })).not.toBeInTheDocument();
   });
 
-  it('shows Live Chat header', () => {
+  it('reopens chat after being closed', () => {
     render(<ChatWidget />);
+    act(() => {
+      screen.getByRole('button', { name: /close chat/i }).click();
+    });
+    expect(screen.queryByRole('dialog', { name: /live chat/i })).not.toBeInTheDocument();
+
     act(() => {
       screen.getByRole('button', { name: /open chat/i }).click();
     });
+    expect(screen.getByRole('dialog', { name: /live chat/i })).toBeInTheDocument();
+  });
+
+  it('shows Live Chat header', () => {
+    render(<ChatWidget />);
     expect(screen.getByText('Live Chat')).toBeInTheDocument();
   });
 
   it('shows empty state message', () => {
     render(<ChatWidget />);
-    act(() => {
-      screen.getByRole('button', { name: /open chat/i }).click();
-    });
     expect(screen.getByText(/no messages yet/i)).toBeInTheDocument();
   });
 
   it('has a message input field', () => {
     render(<ChatWidget />);
-    act(() => {
-      screen.getByRole('button', { name: /open chat/i }).click();
-    });
     expect(screen.getByPlaceholderText('Type a message...')).toBeInTheDocument();
   });
 
-  it('has aria-expanded attribute on toggle', () => {
+  it('toggles aria-expanded attribute', () => {
     render(<ChatWidget />);
-    const btn = screen.getByRole('button', { name: /open chat/i });
-    expect(btn).toHaveAttribute('aria-expanded', 'false');
+    const btn = screen.getByRole('button', { name: /close chat/i });
+    expect(btn).toHaveAttribute('aria-expanded', 'true');
 
     act(() => {
       btn.click();
     });
-    expect(screen.getByRole('button', { name: /close chat/i })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: /open chat/i })).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('establishes socket connection and registers handlers on mount', () => {
@@ -117,6 +99,6 @@ describe('ChatWidget', () => {
 
   it('renders with a user prop', () => {
     render(<ChatWidget user={{ name: 'Alice', email: 'alice@test.com' }} />);
-    expect(screen.getByRole('button', { name: /open chat/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /close chat/i })).toBeInTheDocument();
   });
 });
