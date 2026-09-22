@@ -14,7 +14,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import nodemailer from 'nodemailer';
 import helmet from 'helmet';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import { getDb, saveDb, syncToPostgres } from './db.js';
+import { getDb, saveDb, syncToPostgres, flushSync } from './db.js';
 
 // Safe file-URL resolution that works when bundled to CJS by serverless
 // tooling (where `import.meta.url` is unavailable/undefined).
@@ -2170,6 +2170,189 @@ app.post('/api/tours', async (req, res) => {
   }
 });
 
+// ===== AI ASSISTANT =====
+const AI_MODEL = process.env.AI_MODEL || 'gpt-4o-mini';
+const AI_TIMEOUT_MS = parseInt(process.env.AI_TIMEOUT_MS) || 8500;
+
+function aiContext(limit = 300) {
+  const db = getDbSync();
+  if (!db) return [];
+  const result = db.exec(
+    "SELECT id, title, city, state, price, beds, baths, sqft, type, status, description, image, isPrivate FROM properties ORDER BY featured DESC, createdAt DESC LIMIT ?",
+    [Math.min(300, Math.max(1, limit))]
+  );
+  if (result.length === 0) return [];
+  const cols = result[0].columns;
+  return result[0].values
+    .map((row) => {
+      const obj = {};
+      cols.forEach((c, i) => { obj[c] = row[i]; });
+      return obj;
+    })
+    .filter((p) => Number(p.isPrivate) === 0);
+}
+
+function aiPropertySummary(p) {
+  const d = String(p.description || '').trim();
+  return `${p.title} — ${p.city}, ${p.state} — $${Number(p.price || 0).toLocaleString()} — ${p.beds} bd / ${p.baths} ba / ${p.sqft} sqft — ${p.type} (${p.status}) — id ${p.id}${d ? ` — ${d.slice(0, 200)}` : ''}`;
+}
+
+function fallbackAI(message) {
+  const q = String(message || '').toLowerCase();
+  const props = aiContext();
+  const clean = (v) => String(v || '');
+  const blurb = (p) => [clean(p.title), clean(p.city), clean(p.state), clean(p.type), clean(clean(p.description)).slice(0, 160)].join(' ').toLowerCase();
+  const filter = (fn) => props.filter(fn).slice(0, 3);
+  const byTerm = (term) => filter((p) => blurb(p).includes(term.toLowerCase()));
+  const contains = (...words) => words.some((w) => q.includes(w));
+
+  let reply = '';
+  let found = null;
+
+  if (/\b(hi|hello|hey|good (morning|afternoon|evening)\b)/.test(q) || /^hi[.!?\s]*$/.test(q)) {
+    reply = "Hello! I'm the Dream Homes assistant. Ask me about available listings, prices, waterfront homes, or what's on the market — for example: \"what's available under $2M?\" or \"show me waterfront homes\".";
+  } else if (contains('how many', 'all listing', 'what do you have', 'everything')) {
+    const byCity = new Set(props.map((p) => clean(p.city)));
+    reply = `We currently have ${props.length} active listings across ${byCity.size} cities. Here are a few highlights:`;
+    found = props.filter((p) => Number(p.featured) === 1 || Number(p.badge) !== 0).slice(0, 3);
+    if (found.length === 0) found = props.slice(0, 3);
+  } else if (/(under|below|less than|budget|max).?\$?\s?([\d.,]+)\s*(m|million|k|thousand)?/i.test(q)) {
+    const m = q.match(/([\d.,]+)\s*(m|million|k|thousand)?/i);
+    let cap = parseFloat(m[1]);
+    const unit = (m[2] || '').toLowerCase();
+    if (unit === 'm' || unit === 'million') cap *= 1000000;
+    else if (unit === 'k' || unit === 'thousand') cap *= 1000;
+    found = filter((p) => Number(p.price) <= cap);
+    reply = found.length
+      ? `Here are listings at or under $${cap.toLocaleString()}:`
+      : `I couldn't find any listings under $${cap.toLocaleString()}. Here are our most affordable options:`;
+    if (found.length === 0) found = [...props].sort((a, b) => Number(a.price) - Number(b.price)).slice(0, 3);
+  } else if (contains('cheapest', 'affordable', 'lowest', 'budget', 'low price')) {
+    found = [...props].sort((a, b) => Number(a.price) - Number(b.price)).slice(0, 3);
+    reply = 'Here are our most affordable listings:';
+  } else if (contains('most expensive', 'priciest', 'top') || (contains('best') && contains('price', 'listing', 'home'))) {
+    found = [...props].sort((a, b) => Number(b.price) - Number(a.price)).slice(0, 3);
+    reply = 'Here are our most premium listings:';
+  } else if (contains('waterfront', 'ocean', 'beach', 'lake view', 'water view')) {
+    found = byTerm('waterfront');
+    if (found.length === 0) found = byTerm('ocean');
+    if (found.length === 0) found = byTerm('beach');
+    reply = found.length ? 'Here are waterfront properties:' : 'No waterfront listings right now. Here are some scenic alternatives:';
+    if (found.length === 0) found = props.slice(0, 3);
+  } else if (contains('apartment', 'condo', 'condos')) {
+    found = filter((p) => /apartment|condo/i.test(clean(p.type)) || /condo|apartment/i.test(clean(p.title)));
+    reply = found.length ? 'Here are the apartments and condos:' : 'We don\'t currently list apartments. Here are houses instead:';
+    if (found.length === 0) found = props.slice(0, 3);
+  } else if (contains('villa', 'mansion', 'luxury', 'estate')) {
+    found = filter((p) => /villa|luxury|mansion|estate/i.test(clean(p.title)));
+    reply = found.length ? 'Here are our luxury villas and estates:' : 'We don\'t have a dedicated villa listing. Here are our top picks:';
+    if (found.length === 0) found = [...props].sort((a, b) => Number(b.price) - Number(a.price)).slice(0, 3);
+  } else if (/in\s+([a-zA-Z][a-zA-Z .'-]{1,40})/i.test(q)) {
+    const city = q.match(/in\s+([a-zA-Z][a-zA-Z .'-]{1,40})/i)[1].trim().toLowerCase();
+    found = filter((p) => clean(p.city).toLowerCase().includes(city) || clean(p.state).toLowerCase().includes(city));
+    if (city === 'miami' && found.length === 0) found = byTerm('miami');
+    reply = found.length ? `Here is what we have ${city === 'miami' ? 'in Miami' : `in ${city}`}:` : `No listings found for that location. Here are a few homes to browse:`;
+    if (found.length === 0) found = props.slice(0, 3);
+  } else if (/(\d)\s*(bed|bd)/.test(q)) {
+    const beds = parseInt(q.match(/(\d)\s*(bed|bd)/)[1]);
+    found = filter((p) => Number(p.beds) >= beds);
+    reply = found.length ? `Here are listings with at least ${beds} bedroom${beds > 1 ? 's' : ''}:` : 'No matching homes. Showing our latest:';
+    if (found.length === 0) found = props.slice(0, 3);
+  } else if (contains('for sale', 'buy', 'available', 'on the market')) {
+    found = props.slice(0, 3);
+    reply = `Here ${props.length === 1 ? 'is' : 'are'} ${props.length} listing${props.length === 1 ? '' : 's'} currently on the market:`;
+  } else if (contains('contact', 'agent', 'call', 'reach', 'talk to someone', 'human')) {
+    reply = 'The best way to reach us is the Contact page (contact form) or the Tour/Offer request on any property. Agents reply within one business day. Here are some listings you can tour:';
+    found = props.slice(0, 3);
+  } else {
+    found = props.filter((p) => Number(p.featured) === 1).slice(0, 3);
+    if (found.length === 0) found = props.slice(0, 3);
+    reply = 'Here are some featured homes to get you started. Ask me to filter by city, price, bedrooms, or type (e.g. "homes in Miami under $3M"):';
+  }
+
+  const properties = (found || []).map((p) => ({
+    id: p.id,
+    title: p.title,
+    city: p.city,
+    state: p.state,
+    price: Number(p.price || 0),
+    beds: p.beds,
+    baths: p.baths,
+    sqft: p.sqft,
+    type: p.type,
+    status: p.status,
+    image: clean(p.image),
+    description: clean(p.description).slice(0, 240),
+  }));
+
+  return { reply, properties };
+}
+
+async function aiOpenAI(message, history) {
+  const context = aiContext();
+  const listingsText = context.map(aiPropertySummary).join('\n');
+  const system = [
+    'You are the assistant for Dream Homes, a luxury real estate company. Answer in a friendly, concise tone (usually under 150 words).',
+    'Use ONLY the AVAILABLE LISTINGS section to recommend properties — never invent listings.',
+    'When you recommend properties, list their names. Never cite prices from memory.',
+    '',
+    'AVAILABLE LISTINGS:',
+    listingsText || '(no listings)',
+  ].join('\n');
+  const historySafe = Array.isArray(history)
+    ? history
+        .filter((h) => h && (h.role === 'user' || h.role === 'assistant') && typeof h.content === 'string' && h.content.trim())
+        .map((h) => ({ role: h.role, content: String(h.content).slice(0, 2000) }))
+    : [];
+  const messages = [
+    { role: 'system', content: system },
+    ...historySafe.slice(-10),
+    { role: 'user', content: String(message).slice(0, 2000) },
+  ];
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+  try {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({ model: AI_MODEL, messages, temperature: 0.4, max_tokens: 700 }),
+      signal: controller.signal,
+    });
+    if (!resp.ok) throw new Error(`OpenAI request failed (${resp.status})`);
+    const data = await resp.json();
+    const reply = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+    if (!reply.trim()) throw new Error('OpenAI returned an empty reply');
+    return { reply, source: 'ai' };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+app.post('/api/ai/chat', async (req, res) => {
+  try {
+    const { message, history } = req.body || {};
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        const out = await aiOpenAI(message.trim(), history);
+        return res.json({ reply: out.reply, source: out.source });
+      } catch (err) {
+        console.log('[AI] upstream failed, falling back to local assistant:', err.message);
+      }
+    }
+    const out = fallbackAI(message.trim());
+    res.json({ reply: out.reply, properties: out.properties, source: 'local' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ===== CHAT (Socket.io + REST) =====
 app.get('/api/chat/messages', authMiddleware, (req, res) => {
   try {
@@ -2266,6 +2449,8 @@ export async function ensureDb() {
   }
   return dbInstance;
 }
+
+export { flushSync };
 
 export default app;
 

@@ -24,6 +24,7 @@ try {
 let db = null;
 let SQL = null;
 let pgPool = null;
+let syncChain = Promise.resolve();
 const DATABASE_URL = (process.env.DATABASE_URL || '').trim();
 
 async function getPgPool() {
@@ -451,7 +452,9 @@ async function seedData() {
   const count = existingUsers[0] && existingUsers[0].values[0][0] > 0;
 
   if (!count) {
-    const adminHash = bcrypt.hashSync('admin123', 10);
+    // Default admin credentials. Change ADMIN_SEED_PASSWORD in your hosting env to override.
+    // This only applies when seeding a brand-new database (no users exist yet).
+    const adminHash = bcrypt.hashSync(process.env.ADMIN_SEED_PASSWORD || 'SrfgIdM1!TRTA56FBeyH', 10);
 
     db.run("INSERT INTO users (name, email, password, isAdmin) VALUES (?, ?, ?, ?)", ['Admin', 'admin@dreamhomes.com', adminHash, 1]);
 
@@ -737,12 +740,18 @@ function saveDb() {
     const tmpPath = `${DB_PATH}.tmp`;
     fs.writeFileSync(tmpPath, buffer);
     fs.renameSync(tmpPath, DB_PATH);
-    if (DATABASE_URL) {
-      saveToPostgres(buffer).catch(() => {});
-    }
   } catch (err) {
     console.warn('saveDb: could not persist database:', err.message);
+    return;
   }
+  if (DATABASE_URL) {
+    const save = saveToPostgres(db.export());
+    syncChain = syncChain.then(() => save).catch((e) => console.warn('[DB] postgres sync error:', e.message));
+  }
+}
+
+export async function flushSync() {
+  await syncChain.catch(() => {});
 }
 
 export async function getDb() {

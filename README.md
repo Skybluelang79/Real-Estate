@@ -64,9 +64,10 @@ npm run dev:server   # Express API only
 
 | Email | Password | Role |
 |---|---|---|
-| admin@dreamhomes.com | admin123 | Admin |
+| admin@dreamhomes.com | SrfgIdM1!TRTA56FBeyH | Admin |
 
-New user accounts are created via the **Sign Up** page.
+New user accounts are created via the **Sign Up** page. Set `ADMIN_SEED_PASSWORD`
+in your hosting environment to seed fresh databases with a different admin password.
 
 ### Scripts
 

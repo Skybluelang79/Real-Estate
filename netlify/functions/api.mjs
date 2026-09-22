@@ -1,5 +1,5 @@
 import serverless from 'serverless-http';
-import app, { ensureDb } from '../../server/index.js';
+import app, { ensureDb, flushSync } from '../../server/index.js';
 
 const serverlessHandler = serverless(app);
 
@@ -15,5 +15,9 @@ export async function handler(event) {
     path = path === '/' || path === '' ? '/api' : `/api${path}`;
   }
   event.path = path;
-  return serverlessHandler(event);
+  const result = await serverlessHandler(event);
+  // Serverless functions are frozen once the response returns, so any pending
+  // SQLite->Postgres snapshot write must finish before we hand control back.
+  try { await flushSync(); } catch (err) { console.log('Postgres flush failed:', err.message); }
+  return result;
 }

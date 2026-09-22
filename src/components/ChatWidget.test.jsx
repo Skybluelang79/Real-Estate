@@ -101,4 +101,21 @@ describe('ChatWidget', () => {
     render(<ChatWidget user={{ name: 'Alice', email: 'alice@test.com' }} />);
     expect(screen.getByRole('button', { name: /close chat/i })).toBeInTheDocument();
   });
+
+  it('switches to AI assistant mode and back', () => {
+    render(<ChatWidget />);
+    expect(screen.getByRole('button', { name: /ask ai/i })).toBeInTheDocument();
+
+    act(() => {
+      screen.getByRole('button', { name: /ask ai/i }).click();
+    });
+    expect(screen.getByText('Dream Homes AI')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /dream homes ai assistant/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/ask about listings/i)).toBeInTheDocument();
+
+    act(() => {
+      screen.getByRole('button', { name: /live chat/i }).click();
+    });
+    expect(screen.getByText('Live Chat')).toBeInTheDocument();
+  });
 });
